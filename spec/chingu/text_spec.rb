@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-module Chingu
-  describe Text do
-    it 'should initialize properly'
+describe Chingu::Text do
+  # TODO
+  it 'should initialize properly' do
     # it { should respond_to :text }
     # it { should respond_to :height }
     # it { should respond_to :gosu_font }
