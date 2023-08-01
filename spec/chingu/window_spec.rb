@@ -34,7 +34,7 @@ describe Chingu::Window do
     end
   end
 
-  context 'each game iteration' do
+  context 'Each game iteration' do
     # TODO: Maybe it'll be more useful to use $window instead of @window,
     #       as to check that chingu properly sets the global window
 
