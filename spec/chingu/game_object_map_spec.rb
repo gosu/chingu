@@ -68,13 +68,12 @@ describe Chingu::GameObjectMap do
       expect(@game_object_map.at(10, 10)).to eq(@game_object)
     end
 
-    # I have so many questions...
-    it 'is found at (20, 20)' do
-      expect(@game_object_map.at(20, 20)).to be_nil
+    it 'is found at (19, 19)' do
+      expect(@game_object_map.at(19, 19)).to eq(@game_object)
     end
 
-    it 'is not found at (21, 21)' do
-      expect(@game_object_map.at(21, 21)).to be_nil
+    it 'is not found at (20, 20)' do
+      expect(@game_object_map.at(20, 20)).to be_nil
     end
   end
 
