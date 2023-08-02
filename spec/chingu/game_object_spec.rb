@@ -2,199 +2,214 @@
 
 require 'spec_helper'
 
-module Chingu
-  describe GameObject do
-    before :each do
-      @game = Chingu::Window.new
+describe Chingu::GameObject do
+  before do
+    @game = Chingu::Window.new
 
-      # Gosu uses the paths based on where rspec is, not where this file is, so we need to do it manually!
-      Gosu::Image.autoload_dirs.unshift File.join(File.dirname(File.expand_path(__FILE__)), 'images')
+    # Add images/ to the resources load path
+    Gosu::Image.autoload_dirs
+               .unshift(File.expand_path('images', File.dirname(__FILE__)))
+  end
+
+  after do
+    @game.close
+  end
+
+  it { is_expected.to respond_to(:x) }
+  it { is_expected.to respond_to(:y) }
+  it { is_expected.to respond_to(:angle) }
+  it { is_expected.to respond_to(:center_x) }
+  it { is_expected.to respond_to(:center_y) }
+  it { is_expected.to respond_to(:factor_x) }
+  it { is_expected.to respond_to(:factor_y) }
+  it { is_expected.to respond_to(:zorder) }
+  it { is_expected.to respond_to(:mode) }
+  it { is_expected.to respond_to(:color) }
+  it { is_expected.to respond_to(:attributes) }
+  it { is_expected.to respond_to(:draw) }
+  it { is_expected.to respond_to(:draw_at) }
+  it { is_expected.to respond_to(:draw_relative) }
+
+  context 'When created with defaults' do
+    it 'has default values' do
+      expect(subject.angle).to eq(0)
+      expect(subject.x).to eq(0)
+      expect(subject.y).to eq(0)
+      expect(subject.zorder).to eq(100)
+      expect(subject.factor_x).to eq(1)
+      expect(subject.factor_y).to eq(1)
+      expect(subject.center_x).to eq(0.5)
+      expect(subject.center_y).to eq(0.5)
+      expect(subject.mode).to eq(:default)
+      expect(subject.image).to eq(nil)
+      expect(subject.color).to eq(Gosu::Color::WHITE)
+      expect(subject.alpha).to eq(255)
     end
 
-    after :each do
-      @game.close
+    it 'wraps angle at 360' do
+      expect(subject.angle).to eq(0)
+      subject.angle += 30
+      expect(subject.angle).to eq(30)
+      subject.angle += 360
+      expect(subject.angle).to eq(30)
     end
 
-    it { should respond_to(:x) }
-    it { should respond_to(:y) }
-    it { should respond_to(:angle) }
-    it { should respond_to(:center_x) }
-    it { should respond_to(:center_y) }
-    it { should respond_to(:factor_x) }
-    it { should respond_to(:factor_y) }
-    it { should respond_to(:zorder) }
-    it { should respond_to(:mode) }
-    it { should respond_to(:color) }
-    it { should respond_to(:attributes) }
-    it { should respond_to(:draw) }
-    it { should respond_to(:draw_at) }
-    it { should respond_to(:draw_relative) }
-
-    context 'when created with defaults' do
-      it 'should have default values' do
-        subject.angle.should
-        subject.x.should
-        subject.y.should
-        subject.zorder.should
-        subject.factor_x.should
-        subject.factor_y.should
-        subject.center_x.should
-        subject.center_y.should
-        subject.mode.should
-        subject.image.should
-        subject.color.should # Before it tested equality
-        # with .to_s from the two
-        # arguments
-        subject.alpha.should == 255
-      end
-
-      it 'should wrap angle at 360' do
-        subject.angle.should
-        subject.angle += 30
-        subject.angle.should
-        subject.angle += 360
-        subject.angle.should == 30
-      end
-
-      it "shouldn't allow alpha below 0" do
-        subject.alpha = -10
-        subject.alpha.should == 0
-      end
-
-      it "shouldn't allow alpha above 255" do
-        subject.alpha = 1000
-        subject.alpha.should == 255
-      end
+    # TODO: I think we should just combine this two tests into one named
+    #       'clamps alpha between 0 and 255'
+    it "doesn't allow alpha below 0" do
+      subject.alpha = -10
+      expect(subject.alpha).to eq(0)
     end
 
-    it 'should have the same value for self.alpha as self.color.alpha' do
-      subject.alpha.should == subject.color.alpha
+    it "doesn't allow alpha above 255" do
+      subject.alpha = 1000
+      expect(subject.alpha).to eq(255)
+    end
+  end
+
+  it 'has the same value for self.alpha as self.color.alpha' do
+    expect(subject.alpha).to eq(subject.color.alpha)
+  end
+
+  it 'has a correct filename created from class name' do
+    expect(subject.filename).to eq('game_object')
+  end
+
+  it 'raises an exception if the image fails to load' do
+    expect {
+      described_class.new(image: 'monkey_with_a_nuclear_tail.png')
+    }.to raise_error(Exception)
+  end
+
+  context 'Position' do
+    it '#inside_window?' do
+      subject.x = 1
+      subject.y = 1
+
+      expect(subject.inside_window?).to be_truthy
+      expect(subject.outside_window?).to be_falsy
+    end
+    it '#outside_window?' do
+      subject.x = @game.width + 1
+      subject.y = @game.height + 1
+
+      expect(subject.inside_window?).to be_falsy
+      expect(subject.outside_window?).to be_truthy
+    end
+  end
+
+  context 'Setters' do
+    it 'factor sets both factor_x and factor_y' do
+      subject.factor = 4
+
+      expect(subject.factor_x).to eq(4)
+      expect(subject.factor_y).to eq(4)
     end
 
-    it 'should have a corrent filename created from class name' do
-      subject.filename.should == 'game_object'
+    it 'scale is an alias for factor' do
+      subject.scale = 5
+
+      expect(subject.factor).to eq(5)
+    end
+  end
+
+  context 'Visibility' do
+    it 'will hide/show object on self.hide! and self.show!' do
+      subject.hide!
+      expect(subject.visible?).to be_falsy
+
+      subject.show!
+      expect(subject.visible?).to be_truthy
+    end
+  end
+
+  context 'When created with an image named in a string' do
+    subject { described_class.new(image: 'rect_20x20.png') }
+
+    it 'has width, height & size' do
+      expect(subject.height).to eq(20)
+      expect(subject.width).to eq(20)
+      expect(subject.size).to eq([20, 20])
     end
 
-    it 'should raise an exception if the image fails to load' do
-      -> { described_class.new(image: 'monkey_with_a_nuclear_tail.png') }.should raise_error Exception
+    it 'adapts width, height & size to scaling' do
+      subject.factor = 2
+
+      expect(subject.height).to eq(40)
+      expect(subject.width).to eq(40)
+      expect(subject.size).to eq([40, 40])
     end
 
-    context 'position' do
-      it 'inside_window?' do
-        subject.x = 1
-        subject.y = 1
-        subject.inside_window?.should
-        subject.outside_window?.should == false
-      end
-      it 'outside_window?' do
-        subject.x = @game.width + 1
-        subject.y = @game.height + 1
-        subject.inside_window?.should
-        subject.outside_window?.should == true
-      end
+    it 'adapts factor_x/factor_y to new size' do
+      subject.size = [10, 40]  # Half the width, double the height
+
+      expect(subject.width).to eq(10)
+      expect(subject.height).to eq(40)
+
+      expect(subject.factor_x).to eq(0.5)
+      expect(subject.factor_y).to eq(2)
+    end
+  end
+
+  context 'When created with multiple arguments' do
+    subject { described_class.new(image: 'rect_20x20.png', size: [10, 10]) }
+
+    it 'initializes values correctly' do
+      expect(subject.width).to eq(10)
+      expect(subject.height).to eq(10)
+    end
+  end
+
+  context "When there's a global factor/scale" do
+    before do
+      $window.factor = 2
     end
 
-    context 'setters' do
-      it 'factor should set both factor_x and factor_y' do
-        subject.factor = 4
-        subject.factor_x.should
-        subject.factor_y.should == 4
-      end
+    subject { described_class.new(image: 'rect_20x20.png') }
 
-      it 'scale should work as alias for factor' do
-        subject.scale = 5
-        subject.factor.should == 5
-      end
+    it 'uses global factor/scale' do
+      expect(subject.factor_x).to eq(2)
+      expect(subject.factor_y).to eq(2)
+
+      expect(subject.width).to eq(40)
+      expect(subject.height).to eq(40)
     end
+  end
 
-    context 'visibility' do
-      it 'should hide/show object on self.hide! and self.show!' do
-        subject.hide!
-        subject.visible?.should
-        subject.show!
-        subject.visible?.should == true
-      end
+  context "When there's missing parts" do
+    it "returns nil on width and height if there's no image available" do
+      game_object = described_class.new
+
+      expect(game_object.width).to be_nil
+      expect(game_object.height).to be_nil
     end
+  end
 
-    context 'when created with an image named in a string' do
-      subject { described_class.new(image: 'rect_20x20.png') }
+  context 'Class methods' do
+    it 'Goes through all instances of class on #each' do
+      described_class.destroy_all
 
-      it 'should have width,height & size' do
-        subject.height.should
-        subject.width.should
-        subject.size.should == [20, 20]
-      end
+      go1 = described_class.create
+      go2 = described_class.create
 
-      it 'should adapt width,height & size to scaling' do
-        subject.factor = 2
-        subject.height.should
-        subject.width.should
-        subject.size.should == [40, 40]
-      end
+      index = 0
+      described_class.each do |game_object|
+        expect(game_object).to eq(go1) if index == 0
+        expect(game_object).to eq(go2) if index == 1
 
-      it 'should adapt factor_x/factor_y to new size' do
-        subject.size = [10, 40]  # half the width, double the height
-        subject.width.should
-        subject.height.should
-        subject.factor_x.should
-        subject.factor_y.should == 2
-      end
-    end
-
-    context 'when created with multiple arguments' do
-      subject { described_class.new(image: 'rect_20x20.png', size: [10, 10]) }
-      it 'should initialize values correclty' do
-        subject.width.should
-        subject.height.should == 10
-      end
-    end
-
-    context "when there's a global factor/scale" do
-      before :each do
-        $window.factor = 2
-      end
-
-      subject { described_class.new(image: 'rect_20x20.png') }
-
-      it 'should use global factor/scale' do
-        subject.factor_x.should
-        subject.factor_y.should
-        subject.width.should
-        subject.height.should == 40
-      end
-    end
-
-    context "when there's missing parts" do
-      it "should return nil on width and height if there's no image available" do
-        game_object = GameObject.new
-        game_object.width.should
-        game_object.height.should.nil?
+        index += 1
       end
     end
 
-    context 'class methods' do
-      it 'should go through all instances of class on #each' do
-        GameObject.destroy_all
-        go1 = GameObject.create
-        go2 = GameObject.create
+    it 'Goes through all instances of class on #each_with_index' do
+      described_class.destroy_all
 
-        index = 0
-        GameObject.each do |game_object|
-          game_object.should == go1 if index == 0
-          game_object.should == go2 if index == 1
-          index += 1
-        end
-      end
+      go1 = described_class.create
+      go2 = described_class.create
 
-      it 'should go through all instances of class on #each_with_index' do
-        GameObject.destroy_all
-        go1 = GameObject.create
-        go2 = GameObject.create
-
-        GameObject.each_with_index do |game_object, index|
-          game_object.should == go1 if index == 0
-          game_object.should == go2 if index == 1
-        end
+      described_class.each_with_index do |game_object, index|
+        expect(game_object).to eq(go1) if index == 0
+        expect(game_object).to eq(go2) if index == 1
       end
     end
   end
