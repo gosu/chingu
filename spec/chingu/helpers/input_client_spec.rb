@@ -2,185 +2,229 @@
 
 require 'spec_helper'
 
-module Chingu
-  describe Helpers::InputClient do
-    before :each do
-      $window = double(Gosu::Window)
-      allow($window).to receive(:button_down?) { false }
+describe Chingu::Helpers::InputClient do
+  before do
+    $window = double(Gosu::Window)
+    allow($window).to receive(:button_down?) { false }
 
-      @subject = Object.new.extend described_class
-      allow(@subject).to receive(:handler1) { nil }
-      @handler1 = @subject.method :handler1
-      allow(@subject).to receive(:handler2) { nil }
-      @handler2 = @subject.method :handler2
+    @subject = Object.new.extend described_class
+    allow(@subject).to receive(:handler1) { nil }
+
+    @handler1 = @subject.method :handler1
+    allow(@subject).to receive(:handler2) { nil }
+
+    @handler2 = @subject.method :handler2
+    allow(@subject).to receive(:handler2)
+  end
+
+  after do
+    $window = nil
+  end
+
+  # TODO: Make more consistent
+
+  describe '#holding?' do
+    it 'is true if that key is being held down' do
+      expect($window).to receive(:button_down?).with(Gosu::KbSpace)
+                                               .and_return(true)
+
+      expect(@subject.holding?(:space)).to be_truthy
     end
 
-    after :each do
-      $window = nil
+    it 'is false if that key is being held down' do
+      expect($window).to receive(:button_down?).with(Gosu::KbSpace)
+                                               .and_return(false)
+
+      expect(@subject.holding?(:space)).to be_falsy
+    end
+  end
+
+  describe '#holding_all?' do
+    it 'is true if all of those keys are being held down' do
+      expect($window).to receive(:button_down?).with(Gosu::KbSpace)
+                                               .and_return(true)
+      expect($window).to receive(:button_down?).with(Gosu::KbA)
+                                               .and_return(true)
+
+      expect(@subject.holding_all?(:space, :a)).to be_truthy
     end
 
-    describe '#holding?' do
-      it 'should be true if that key is being held down' do
-        $window.should_receive(:button_down?).with(Gosu::KbSpace).and_return(true)
-        @subject.holding?(:space).should be_truthy
-      end
+    it 'is false if all of those keys are not being held down' do
+      expect(@subject.holding_all?(:space, :a)).to be_falsy
+    end
 
-      it 'should be false if that key is being held down' do
-        $window.should_receive(:button_down?).with(Gosu::KbSpace).and_return(false)
-        @subject.holding?(:space).should be_falsy
+    it 'is false if some of those keys are not being held down' do
+      expect($window).to receive(:button_down?).with(Gosu::KbSpace)
+                                               .and_return(true)
+
+      expect(@subject.holding_all?(:space, :a)).to be_falsy
+    end
+  end
+
+  describe '#holding_any?' do
+    it 'is true if any of those keys are being held down' do
+      allow($window).to receive(:button_down?).with(Gosu::KbA)
+                                               .and_return(true)
+      allow($window).to receive(:button_down?).with(Gosu::KbSpace)
+                                              .and_return(true)
+
+      expect(@subject.holding_any?(:space, :a)).to be_truthy
+    end
+
+    it 'is false if none of those keys are being held down' do
+      expect(@subject.holding_any?(:space, :a)).to be_falsy
+    end
+  end
+
+  describe '#input' do
+    it 'is an empty hash initially' do
+      expect(@subject.input).to eq({})
+    end
+  end
+
+  describe '#input=' do
+    it 'sets the input hash' do
+      @subject.input = { a: Chingu::GameStates::Pause, b: Chingu::GameState }
+
+      expect(@subject.input).to eq({ a: [Chingu::GameStates::Pause],
+                                     b: [Chingu::GameState] })
+    end
+
+    it 'sets the input array' do
+      allow(@subject).to receive(:a)
+      allow(@subject).to receive(:b)
+
+      @subject.input = %i[a b]
+      expect(@subject.input).to eq({ a: [@subject.method(:a)],
+                                     b: [@subject.method(:b)] })
+    end
+  end
+
+  describe '#add_inputs' do
+    it 'sets the input hash' do
+      @subject.add_inputs a: Chingu::GameStates::Pause, b: Chingu::GameState
+
+      expect(@subject.input).to eq({ a: [Chingu::GameStates::Pause],
+                                     b: [Chingu::GameState] })
+    end
+
+    it 'sets the input array' do
+      allow(@subject).to receive(:a)
+      allow(@subject).to receive(:b)
+
+      @subject.add_inputs :a, :b
+
+      expect(@subject.input).to eq({ a: [@subject.method(:a)],
+                                     b: [@subject.method(:b)] })
+    end
+
+    # Not bothering with all the options, since it is tested fully, though
+    # indirectly, in #on_input already. I suspect it might be better to put
+    # the logic in on_input rather than in input too. Mmm.
+    it 'should do other stuff'
+  end
+
+  describe '#on_input' do
+    it 'adds a handler that is given as a block' do
+      block = -> {}
+      @subject.on_input :a, &block
+
+      expect(@subject.input).to eq({ a: [block] })
+    end
+
+    it 'adds a handler that is given as a method' do
+      @subject.on_input :a, @handler1
+
+      expect(@subject.input).to eq({ a: [@handler1] })
+    end
+
+    it 'adds a handler that is given as a proc' do
+      proc = -> { puts 'Hello' }
+      @subject.on_input :a, proc
+
+      expect(@subject.input).to eq({ a: [proc] })
+    end
+
+    [:handler1, 'handler1'].each do |handler|
+      it "adds a handler that is given as a #{handler.class}" do
+        @subject.on_input :a, handler
+
+        expect(@subject.input).to eq({ a: [@handler1] })
       end
     end
 
-    describe '#holding_all?' do
-      it 'should be true if all of those keys are being held down' do
-        $window.should_receive(:button_down?).with(Gosu::KbSpace).and_return(true)
-        $window.should_receive(:button_down?).with(Gosu::KbA).and_return(true)
-        @subject.holding_all?(:space, :a).should be_truthy
-      end
+    it 'adds multiple handlers for the same event' do
+      @subject.on_input :a, @handler1
+      @subject.on_input :a, @handler2
 
-      it 'should be false if all of those keys are not being held down' do
-        @subject.holding_all?(:space, :a).should be_falsy
-      end
-
-      it 'should be false if some of those keys are not being held down' do
-        allow($window).to receive(:button_down?).with(Gosu::KbSpace) { true }
-        @subject.holding_all?(:space, :a).should be_falsy
-      end
+      expect(@subject.input).to eq({ a: [@handler1, @handler2] })
     end
 
-    describe '#holding_any?' do
-      it 'should be true if any of those keys are being held down' do
-        allow($window).to receive(:button_down?).with(Gosu::KbA) { true }
-        allow($window).to receive(:button_down?).with(Gosu::KbSpace) { true }
-        @subject.holding_any?(:space, :a).should be_truthy
-      end
+    it 'automatically handles to a method if only the input is given' do
+      allow(@subject).to receive(:a)
+      @subject.on_input :a
 
-      it 'should be false if none of those keys are being held down' do
-        @subject.holding_any?(:space, :a).should be_falsy
-      end
+      expect(@subject.input).to eq({ a: [@subject.method(:a)] })
     end
 
-    describe '#input' do
-      it 'should initially be an empty hash' do
-        @subject.input.should == {}
-      end
+    it 'adds multiple handlers for the same event, even if given different key names' do
+      @subject.on_input :left, @handler1
+      @subject.on_input :left_arrow, @handler2
+
+      expect(@subject.input).to eq({ left_arrow: [@handler1, @handler2] })
     end
 
-    describe '#input=' do
-      it 'should set the input hash' do
-        @subject.input = { a: GameStates::Pause, b: GameState }
-        @subject.input.should == { a: [GameStates::Pause], b: [GameState] }
-      end
+    it 'adds a handler that is given as a Chingu::GameState class' do
+      @subject.on_input :a, Chingu::GameStates::Pause
 
-      it 'should set the input array' do
-        allow(@subject).to receive(:a)
-        allow(@subject).to receive(:b)
-        @subject.input = %i[a b]
-        @subject.input.should == { a: [@subject.method(:a)], b: [@subject.method(:b)] }
-      end
+      expect(@subject.input).to eq({ a: [Chingu::GameStates::Pause] })
     end
 
-    describe '#add_inputs' do
-      it 'should set the input hash' do
-        @subject.add_inputs a: GameStates::Pause, b: GameState
-        @subject.input.should == { a: [GameStates::Pause], b: [GameState] }
-      end
+    it 'adds a handler that is given as a Chingu::GameState instance' do
+      state = Chingu::GameState.new
+      @subject.on_input :a, state
 
-      it 'should set the input array' do
-        allow(@subject).to receive(:a)
-        allow(@subject).to receive(:b)
-        @subject.add_inputs :a, :b
-        @subject.input.should == { a: [@subject.method(:a)], b: [@subject.method(:b)] }
-      end
-
-      # Not bothering with all the options, since it is tested fully, though indirectly, in #on_input already.
-      # I suspect it might be better to put the logic in on_input rather than in input too. Mmm.
-      it 'should do other stuff'
+      expect(@subject.input).to eq({ a: [state] })
     end
 
-    describe '#on_input' do
-      it 'should add a handler that is given as a block' do
-        block = -> {}
-        @subject.on_input :a, &block
-        @subject.input.should == { a: [block] }
-      end
+    it 'raises an error if given an unknown key' do
+      expect {
+         @subject.on_input :aardvark, @handler1
+      }.to raise_error(ArgumentError)
+    end
 
-      it 'should add a handler that is given as a method' do
-        @subject.on_input :a, @handler1
-        @subject.input.should == { a: [@handler1] }
-      end
+    it 'should raise an error if given an incorrect action' do
+      expect {
+        @subject.on_input :a, 47
+      }.to raise_error(ArgumentError)
+    end
 
-      it 'should add a handler that is given as a proc' do
-        proc = -> { puts 'Hello' }
-        @subject.on_input :a, proc
-        @subject.input.should == { a: [proc] }
-      end
+    it 'adds a new handler if one already exists for that input' do
+      @subject.on_input :a, @handler1
+      @subject.on_input :b, @handler2
 
-      [:handler1, 'handler1'].each do |handler|
-        it "should add a handler that is given as a #{handler.class}" do
-          @subject.on_input :a, handler
-          @subject.input.should == { a: [@handler1] }
-        end
-      end
+      expect(@subject.input).to eq({ a: [@handler1], b: [@handler2] })
+    end
 
-      it 'should add multiple handlers for the same event' do
-        @subject.on_input :a, @handler1
-        @subject.on_input :a, @handler2
-        @subject.input.should == { a: [@handler1, @handler2] }
-      end
+    it 'considers all key synonyms the same' do
+      @subject.on_input :left, @handler1
+      @subject.on_input :left_arrow, @handler2
 
-      it 'should automatically handle to a method if only the input is given' do
-        allow(@subject).to receive(:a)
-        @subject.on_input :a
-        @subject.input.should == { a: [@subject.method(:a)] }
-      end
+      expect(@subject.input).to eq({ left_arrow: [@handler1, @handler2] })
+    end
 
-      it 'should add multiple handlers for the same event, even if given different key names' do
-        @subject.on_input :left, @handler1
-        @subject.on_input :left_arrow, @handler2
-        @subject.input.should == { left_arrow: [@handler1, @handler2] }
-      end
+    it 'splits up and standardize key arrays' do
+      @subject.on_input(%i[space left], @handler1)
 
-      it 'should add a handler that is given as a Chingu::GameState class' do
-        @subject.on_input :a, GameStates::Pause
-        @subject.input.should == { a: [GameStates::Pause] }
-      end
+      expect(@subject.input).to eq({ ' ': [@handler1],
+                                     left_arrow: [@handler1] })
+    end
 
-      it 'should add a handler that is given as a Chingu::GameState instance' do
-        state = GameState.new
-        @subject.on_input :a, state
-        @subject.input.should == { a: [state] }
-      end
-
-      it 'should raise an error if given an unknown key' do
-        -> { @subject.on_input :aardvark, @handler1 }.should raise_error ArgumentError
-      end
-
-      it 'should raise an error if given an incorrect action' do
-        -> { @subject.on_input :a, 47 }.should raise_error ArgumentError
-      end
-
-      it 'should add a new handler if one already exists for that input' do
-        @subject.on_input :a, @handler1
-        @subject.on_input :b, @handler2
-        @subject.input.should == { a: [@handler1], b: [@handler2] }
-      end
-
-      it 'should consider all key synonyms the same' do
-        @subject.on_input :left, @handler1
-        @subject.on_input :left_arrow, @handler2
-        @subject.input.should == { left_arrow: [@handler1, @handler2] }
-      end
-
-      it 'should split up and standardise key arrays' do
-        @subject.on_input(%i[space left], @handler1)
-        @subject.input.should == { ' ': [@handler1], left_arrow: [@handler1] }
-      end
-
-      it 'should raise an error if both an action and a hander are given' do
-        block = -> { p 'hello world' }
-        -> { @subject.on_input :a, 'Hello', &block }.should raise_error ArgumentError
-      end
+    it 'raises an error if both an action and a hander are given' do
+      block = ->{ p 'hello world' }
+      expect {
+        @subject.on_input :a, 'Hello', &block
+      }.to raise_error(ArgumentError)
     end
   end
 end
