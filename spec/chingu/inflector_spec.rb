@@ -2,16 +2,18 @@
 
 require 'spec_helper'
 
-describe Chingu::Inflector do
-  describe '#camelize' do
-    it 'camelizes strings' do
-      expect(subject.camelize('automatic_assets')).to eql('AutomaticAssets')
+module Chingu
+  describe Inflector do
+    describe '.camelize' do
+      it 'camelizes strings' do
+        subject.camelize('automatic_assets').should eql('AutomaticAssets')
+      end
     end
-  end
 
-  describe '#underscore' do
-    it 'converts class-like strings to underscore' do
-      expect(subject.underscore('FireBall')).to eql('fire_ball')
+    describe '.underscore' do
+      it 'converts class-like strings to underscore' do
+        subject.underscore('FireBall').should eql('fire_ball')
+      end
     end
   end
 end
