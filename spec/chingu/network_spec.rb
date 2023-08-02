@@ -13,255 +13,286 @@ def data_set
   }
 end
 
-module Chingu
-  describe 'Network' do
-    describe Chingu::GameStates::NetworkServer do
-      it 'should open listening port on start()' do
-        @server = described_class.new(address: '0.0.0.0', port: 9999)
-        @server.should_receive(:on_start)
-        @server.start
-        @server.stop
+describe 'Network' do
+  describe Chingu::GameStates::NetworkServer do
+    it 'opens listening port on #start' do
+      @server = described_class.new(address: '0.0.0.0', port: 9999)
+      expect(@server).to receive(:on_start)
+
+      @server.start
+      @server.stop
+    end
+
+    it 'client timeouts when connecting to blackhole IP' do
+      @client = Chingu::GameStates::NetworkClient.new(address: '1.2.3.4',
+                                                      port: 1234,
+                                                      debug: true)
+      @client.connect
+
+      expect(@client).to receive(:on_timeout)
+
+      @client.update while @client.socket
+    end
+
+    it 'calls #on_start_error if failing' do
+      @server = described_class.new(address: '1.2.3.999',
+                                    port: 12_345_678) # crazy address:port
+      expect(@server).to receive(:on_start_error)
+
+      @server.start
+      @server.stop
+    end
+
+    it 'calls #on_connect and #on_disconnect when client connects' do
+      @server = described_class.new(address: '0.0.0.0', port: 9999)
+      @client = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1',
+                                                      port: 9999)
+
+      expect(@server).to receive(:on_start)
+      expect(@server).to receive(:on_connect).with(an_instance_of(TCPSocket))
+      expect(@client).to receive(:on_connect)
+
+      @server.start
+      @client.connect
+
+      @client.update until @client.connected?
+      @server.update
+
+      @client.stop
+      @server.stop
+    end
+  end
+
+  describe Chingu::GameStates::NetworkClient do
+    describe '#connect' do
+      it 'callbacks #on_connection_refused when connecting to closed port' do
+        @client = described_class.new(address: '127.0.0.1',
+                                      port: 55_421) # Assume its closed
+        expect(@client).to receive(:on_connection_refused)
+
+        @client.connect
+        5.times { @client.update }
       end
 
-      it 'client should timeout when connecting to blackhole ip' do
-        @client = Chingu::GameStates::NetworkClient.new(address: '1.2.3.4', port: 1234, debug: true)
+      it 'does not callbacks #on_timeout when unable to connect for less time ' \
+         'than the timeout' do
+        @client = described_class.new(address: '127.0.0.1',
+                                      port: 55_421,
+                                      timeout: 250) # Assume its closed
         @client.connect
+        expect(@client).not_to receive(:on_timeout)
+
+        5.times do
+          @client.update
+          sleep 0.01
+        end
+      end
+
+      it 'callbacks #on_timeout when unable to connect longer than the timeout' do
+        @client = described_class.new(address: '127.0.0.1',
+                                      port: 55_421,
+                                      timeout: 250) # Assume its closed
+        @client.connect
+        @client.update
+
+        sleep 0.3
 
         expect(@client).to receive(:on_timeout)
-        @client.update while @client.socket
+        5.times { @client.update }
       end
+    end
+  end
 
-      it 'should call on_start_error() if failing' do
-        @server = described_class.new(address: '1.2.3.999', port: 12_345_678) # crazy address:port
-        @server.should_receive(:on_start_error)
-        @server.start
-        @server.stop
-      end
+  describe 'Connecting' do
+    before do
+      @client = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1',
+                                                      port: 9999)
+      @server = Chingu::GameStates::NetworkServer.new(port: 9999)
+    end
 
-      it 'should call on_connect() and on_disconnect() when client connects' do
-        @server = described_class.new(address: '0.0.0.0', port: 9999)
-        @client = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1', port: 9999)
+    it 'connects to the server, when the server starts before it' do
+      # TODO
+      # @server.start
+      # @client.connect
+      # 5.times { @client.update }
+      # @client.should be_connected
+    end
 
-        @server.should_receive(:on_start)
-        @server.should_receive(:on_connect).with(an_instance_of(TCPSocket))
-        @client.should_receive(:on_connect)
-        @server.start
-        @client.connect
+    it "connects to the server, even when the server isn't initialy available" do
+      @client.connect
 
-        @client.update until @client.connected?
+      # FIXME: Is this really necessary?
+      # 3.times { @client.update; sleep 0.2; @server.update; @client.flush }
+
+      @server.start
+
+      3.times do
+        @client.update
+        sleep 0.2
         @server.update
+        @client.flush
+      end
 
-        @client.stop
-        @server.stop
+      expect(@client.connected?).to be_truthy
+    end
+
+    after do
+      @client.close
+      @server.close
+    end
+  end
+
+  describe 'Network communication' do
+    before do
+      @server = Chingu::GameStates::NetworkServer.new(port: 9999).start
+
+      @client = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1',
+                                                      port: 9999).connect
+      @client2 = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1',
+                                                       port: 9999).connect
+      @client.update until @client.connected?
+      @client2.update until @client2.connected?
+    end
+
+    after do
+      @server.close
+      @client.close
+      @client2.close
+    end
+
+    describe 'From client to server' do
+      data_set.each do |name, data|
+        it "must send/recv #{name}" do
+          data.each do |packet|
+            expect(@server).to receive(:on_msg).with(an_instance_of(TCPSocket),
+                                                     packet)
+            @client.send_msg(packet)
+          end
+
+          5.times { @server.update }
+        end
       end
     end
 
-    describe Chingu::GameStates::NetworkClient do
-      describe 'connect' do
-        it 'should call on_connection_refused callback when connecting to closed port' do
-          @client = described_class.new(address: '127.0.0.1', port: 55_421) # closed we assume
-          @client.should_receive(:on_connection_refused)
-          @client.connect
+    describe 'From server to a specific client' do
+      data_set.each do |name, data|
+        it "must send/recv #{name}" do
+          data.each { |packet| expect(@client).to receive(:on_msg).with(packet) }
+
+          @server.update # Accept the client before sending, so we know of
+                         # its socket.
+          data.each { |packet| @server.send_msg(@server.sockets[0], packet) }
+
           5.times { @client.update }
         end
+      end
+    end
 
-        it 'should not call on_timeout callback when unable to connect for less time than the timeout' do
-          @client = described_class.new(address: '127.0.0.1', port: 55_421, timeout: 250) # closed we assume
-          @client.connect
-          @client.should_not_receive(:on_timeout)
+    describe 'From server to all clients' do
+      data_set.each do |name, data|
+        it "must send/recv #{name}" do
+          @server.update # Accept the clients, so we know about their existence
+                         # to broadcast.
+
+          data.each do |packet|
+            expect(@client).to receive(:on_msg).with(packet)
+            expect(@client2).to receive(:on_msg).with(packet)
+
+            @server.broadcast_msg(packet)
+          end
+
           5.times do
-            @client.update
-            sleep 0.01
-          end
-        end
-
-        it 'should call on_timeout callback when unable to connect for longer than the timeout' do
-          @client = described_class.new(address: '127.0.0.1', port: 55_421, timeout: 250) # closed we assume
-          @client.connect
-          @client.update
-          sleep 0.3
-          @client.should_receive(:on_timeout)
-          5.times { @client.update }
-        end
-      end
-    end
-
-    describe 'Connecting' do
-      before :each do
-        @client = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1', port: 9999)
-        @server = Chingu::GameStates::NetworkServer.new(port: 9999)
-      end
-
-      it 'should connect to the server, when the server starts before it' do
-        # TODO
-        # @server.start
-        # @client.connect
-        # 5.times { @client.update }
-        # @client.should be_connected
-      end
-
-      it "should connect to the server, even when the server isn't initialy available" do
-        @client.connect
-        # FIXME: Is this really necessary?
-        # 3.times { @client.update; sleep 0.2; @server.update; @client.flush }
-        @server.start
-        3.times do
-          @client.update
-          sleep 0.2
-          @server.update
-          @client.flush
-        end
-        expect(@client.connected?).to be_truthy
-      end
-
-      after :each do
-        @client.close
-        @server.close
-      end
-    end
-
-    describe 'Network communication' do
-      before :each do
-        @server = Chingu::GameStates::NetworkServer.new(port: 9999).start
-        @client = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1', port: 9999).connect
-        @client2 = Chingu::GameStates::NetworkClient.new(address: '127.0.0.1', port: 9999).connect
-        @client.update until @client.connected?
-        @client2.update until @client2.connected?
-      end
-
-      after :each do
-        @server.close
-        @client.close
-        @client2.close
-      end
-
-      describe 'From client to server' do
-        data_set.each do |name, data|
-          it "should send/recv #{name}" do
-            data.each do |packet|
-              @server.should_receive(:on_msg).with(an_instance_of(TCPSocket), packet)
-              @client.send_msg(packet)
-            end
-
-            5.times { @server.update }
-          end
-        end
-      end
-
-      describe 'From server to a specific client' do
-        data_set.each do |name, data|
-          it "should send/recv #{name}" do
-            data.each { |packet| @client.should_receive(:on_msg).with(packet) }
-            @server.update # Accept the client before sending, so we know of its socket.
-            data.each { |packet| @server.send_msg(@server.sockets[0], packet) }
-
-            5.times { @client.update }
-          end
-        end
-      end
-
-      describe 'From server to all clients' do
-        data_set.each do |name, data|
-          it "should send/recv #{name}" do
-            @server.update # Accept the clients, so know about their existence to broadcast.
-
-            data.each do |packet|
-              @client.should_receive(:on_msg).with(packet)
-              @client2.should_receive(:on_msg).with(packet)
-              @server.broadcast_msg(packet)
-            end
-
-            5.times do
-              @client.update
-              @client2.update
-            end
-          end
-        end
-      end
-
-      describe 'byte and packet counters' do
-        before :each do
-          @packet = 'Hello! ' * 10
-          @packet_length = Marshal.dump(@packet).length
-          @packet_length_with_header = @packet_length + 4
-        end
-
-        it 'should be zeroed initially' do
-          [@client, @client2, @server].each do |network|
-            network.packets_sent.should be 0
-            network.bytes_sent.should be 0
-            network.packets_received.should be 0
-            network.bytes_received.should be 0
-          end
-        end
-
-        describe 'client to server' do
-          before :each do
-            @client.send_msg(@packet)
-            @server.update
-          end
-
-          describe 'client' do
-            it 'should increment counters correctly when sending a message' do
-              @client.packets_sent.should eq 1
-              @client.bytes_sent.should eq @packet_length_with_header
-            end
-          end
-
-          describe 'server' do
-            it 'should increment counters correctly when receiving a message' do
-              @server.packets_received.should eq 1
-              @server.bytes_received.should eq @packet_length_with_header
-            end
-          end
-        end
-
-        describe 'server to client' do
-          before :each do
-            @server.update
-            @server.send_msg(@server.sockets[0], @packet)
-            @client.update
-          end
-
-          describe 'server' do
-            it 'should increment sent counters' do
-              @server.packets_sent.should eq 1
-              @server.bytes_sent.should eq @packet_length_with_header
-            end
-          end
-
-          describe 'client' do
-            it 'should increment received counters' do
-              @client.packets_received.should eq 1
-              @client.bytes_received.should eq @packet_length_with_header
-              @client2.packets_received.should eq 0
-              @client2.bytes_received.should eq 0
-            end
-          end
-        end
-
-        describe 'server to clients' do
-          before :each do
-            @server.update
-            @server.broadcast_msg(@packet)
             @client.update
             @client2.update
           end
+        end
+      end
+    end
 
-          describe 'server' do
-            it 'should increment sent counters' do
-              # Single message, broadcast to two clients.
-              @server.packets_sent.should eq 2
-              @server.bytes_sent.should eq @packet_length_with_header * 2
-            end
+    describe 'Byte and packet counters' do
+      before do
+        @packet = 'Hello! ' * 10
+        @packet_length = Marshal.dump(@packet).length
+        @packet_length_with_header = @packet_length + 4
+      end
+
+      it 'is zeroed initially' do
+        [@client, @client2, @server].each do |network|
+          expect(network.packets_sent).to eq(0)
+          expect(network.bytes_sent).to eq(0)
+          expect(network.packets_received).to eq(0)
+          expect(network.bytes_received).to eq(0)
+        end
+      end
+
+      describe 'Client to server' do
+        before do
+          @client.send_msg(@packet)
+          @server.update
+        end
+
+        describe 'Client' do
+          it 'increments counters correctly when sending a message' do
+            expect(@client.packets_sent).to eq(1)
+
+            expect(@client.bytes_sent).to eq(@packet_length_with_header)
           end
+        end
 
-          describe 'clients' do
-            it 'should increment received counters' do
-              [@client, @client2].each do |client|
-                client.packets_received.should eq 1
-                client.bytes_received.should eq @packet_length_with_header
-              end
+        describe 'Server' do
+          it 'increments counters correctly when receiving a message' do
+            expect(@server.packets_received).to eq(1)
+            expect(@server.bytes_received).to eq(@packet_length_with_header)
+          end
+        end
+      end
+
+      describe 'Server to client' do
+        before do
+          @server.update
+          @server.send_msg(@server.sockets[0], @packet)
+          @client.update
+        end
+
+        describe 'Server' do
+          it 'increments sent counters' do
+            expect(@server.packets_sent).to eq(1)
+            expect(@server.bytes_sent).to eq(@packet_length_with_header)
+          end
+        end
+
+        describe 'Client' do
+          it 'increments received counters' do
+            expect(@client.packets_received).to eq(1)
+            expect(@client.bytes_received).to eq(@packet_length_with_header)
+            expect(@client2.packets_received).to eq(0)
+            expect(@client2.bytes_received).to eq(0)
+          end
+        end
+      end
+
+      describe 'Server to clients' do
+        before do
+          @server.update
+          @server.broadcast_msg(@packet)
+
+          @client.update
+          @client2.update
+        end
+
+        describe 'Server' do
+          it 'increments sent counters' do
+            # Single message, broadcast to two clients.
+            expect(@server.packets_sent).to eq(2)
+            expect(@server.bytes_sent).to eq(@packet_length_with_header * 2)
+          end
+        end
+
+        describe 'Clients' do
+          it 'increments received counters' do
+            [@client, @client2].each do |client|
+              expect(client.packets_received).to eq(1)
+              expect(client.bytes_received).to eq(@packet_length_with_header)
             end
           end
         end
