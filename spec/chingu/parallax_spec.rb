@@ -6,8 +6,9 @@ describe Chingu::Parallax do
   before do
     @window = Chingu::Window.new
 
-    # Gosu uses the paths based on where rspec is, not where this file is, so we need to do it manually!
-    Gosu::Image.autoload_dirs.unshift File.join(File.dirname(File.expand_path(__FILE__)), 'images')
+    # Add images/ to the resources load path
+    Gosu::Image.autoload_dirs
+               .unshift(File.expand_path('images', File.dirname(__FILE__)))
   end
 
   after do
@@ -33,7 +34,7 @@ describe Chingu::Parallax do
     end
 
     it 'starts incrementing z-order in layers from Parallax-instance z-order if available' do
-      parallax = Chingu::Parallax.new(zorder: 2000)
+      parallax = described_class.new(zorder: 2000)
 
       3.times { parallax.add_layer(image: 'rect_20x20.png') }
 
