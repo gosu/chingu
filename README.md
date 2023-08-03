@@ -14,7 +14,7 @@ You can find the original repo of Chingu [here](https://github.com/ippa/chingu)
 
 ## Requirements
 
-Ruby version higher that or equal to the required by Gosu itself, plus
+Ruby version higher than or equal to the required by Gosu itself, plus
 Gosu's dependencies. As a rule of thumb, if you managed to install Gosu
 then you're setup.
 
@@ -29,7 +29,7 @@ lacking, in no special order, some of the flaws I've found:
 - Style inconsistencies
 - Somewhat poor naming
 - Confusing code organization
-- Outdated (library was made with Ruby Ruby 1.9.2(!) in mind)
+- Outdated (library was made with Ruby 1.9.2(!) in mind)
 - Some depedencies used by the library are, as of now, abandoned
 
 ## Development
