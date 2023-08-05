@@ -188,15 +188,15 @@ describe Chingu::Helpers::InputClient do
     end
 
     it 'raises an error if given an unknown key' do
-      expect {
+      expect do
          @subject.on_input :aardvark, @handler1
-      }.to raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
 
     it 'should raise an error if given an incorrect action' do
-      expect {
+      expect do
         @subject.on_input :a, 47
-      }.to raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
 
     it 'adds a new handler if one already exists for that input' do
@@ -222,9 +222,9 @@ describe Chingu::Helpers::InputClient do
 
     it 'raises an error if both an action and a hander are given' do
       block = ->{ p 'hello world' }
-      expect {
+      expect do
         @subject.on_input :a, 'Hello', &block
-      }.to raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
   end
 end

@@ -16,14 +16,14 @@ describe Chingu::FPSCounter do
     end
 
     it 'increases the tick counter' do
-      expect {
+      expect do
         subject.register_tick
-      }.to change(subject, :ticks).from(0).to(1)
+      end.to change(subject, :ticks).from(0).to(1)
     end
 
     it 'keeps track of the fps' do
       # #register_tick has been called 3 times within 1 second = 3 FPS
-      expect {
+      expect do
         subject.register_tick
 
         allow(Gosu).to receive(:milliseconds).and_return(1500)
@@ -33,7 +33,7 @@ describe Chingu::FPSCounter do
         allow(Gosu).to receive(:milliseconds).and_return(2000)
 
         subject.register_tick
-      }.to change(subject, :fps).from(0).to(3)
+      end.to change(subject, :fps).from(0).to(3)
     end
 
     it 'calculates how many milliseconds passed since last game loop' \

@@ -59,9 +59,9 @@ describe Chingu::Animation do
     end
 
     it 'rejects non-consistent frame sizes' do
-      expect {
+      expect do
         described_class.new(frames: @animation_clean.frames + [Gosu::Image[@file]])
-      }.to raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
   end
 
@@ -78,15 +78,15 @@ describe Chingu::Animation do
 
   describe 'Animation loading exception handling' do
     it 'fails unless one of the creation paramaters is given' do
-      expect {
+      expect do
         described_class.new
-      }.to raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
 
     it 'fails if more than one creation paramater is given' do
-      expect {
+      expect do
         described_class.new(image: Gosu::Image[@file], file: @file)
-      }.to raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
   end
 

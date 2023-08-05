@@ -76,9 +76,9 @@ describe Chingu::GameObject do
   end
 
   it 'raises an exception if the image fails to load' do
-    expect {
+    expect do
       described_class.new(image: 'monkey_with_a_nuclear_tail.png')
-    }.to raise_error(Exception)
+    end.to raise_error(Exception)
   end
 
   context 'Position' do

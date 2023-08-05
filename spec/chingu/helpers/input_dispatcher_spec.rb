@@ -100,9 +100,9 @@ describe Chingu::Helpers::InputDispatcher do
 
     # NOTE: Doesn't check if a passed class is incorrect. Life is too short.
     it 'raises an error with unexpected data' do
-      expect {
+      expect do
         @subject.send(:dispatch_actions, [12])
-      }.to raise_error(ArgumentError)
+      end.to raise_error(ArgumentError)
     end
   end
 end
