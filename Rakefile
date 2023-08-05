@@ -9,12 +9,12 @@ RSpec::Core::RakeTask.new { |t| }
 
 desc "Build the gem"
 task :build do
-  Dir.mkdir("dist") unless Dir.exist?("dist")
+  Dir.mkdir("pkg") unless Dir.exist?("pkg")
 
   sh "gem build chingu.gemspec"
 
   puts "Moving gem into directory pkg/"
-  sh "mv chingu-#{Chingu::VERSION}.gem dist/"
+  sh "mv chingu-#{Chingu::VERSION}.gem pkg/"
 end
 
 desc "Release new gem"
