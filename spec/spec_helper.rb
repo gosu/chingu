@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 # Add lib/ to load path
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$LOAD_PATH.prepend(File.dirname(__FILE__))
+$LOAD_PATH.prepend(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'rspec'
 

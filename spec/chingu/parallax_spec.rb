@@ -8,7 +8,7 @@ describe Chingu::Parallax do
 
     # Add images/ to the resources load path
     Gosu::Image.autoload_dirs
-               .unshift(File.expand_path('images', File.dirname(__FILE__)))
+               .prepend(File.expand_path('images', File.dirname(__FILE__)))
   end
 
   after do

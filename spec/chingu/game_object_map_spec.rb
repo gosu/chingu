@@ -31,7 +31,7 @@ describe Chingu::GameObjectMap do
 
     # Add images/ to the resources load path
     Gosu::Image.autoload_dirs
-               .unshift(File.expand_path('images', File.dirname(__FILE__)))
+               .prepend(File.expand_path('images', File.dirname(__FILE__)))
 
     MyGameObject.destroy_all
     MyBigGameObject.destroy_all
