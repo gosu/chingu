@@ -56,7 +56,7 @@ describe Chingu::GameObjectMap do
   end
 
   context 'Containing a game object of size 20x20 at position (0, 0)' do
-    before  do
+    before do
       @game_object_map = described_class.new(game_objects: MyGameObject.all, grid: @grid_size)
     end
 
