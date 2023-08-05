@@ -21,7 +21,7 @@ describe Chingu::Helpers::InputDispatcher do
 
         allow(@client).to receive(:input).with(no_args) {
            { key => [@client.method(:handler)] }
-         }
+        }
 
         @subject.send("dispatch_#{event}", Gosu::KbA, @client)
       end
