@@ -5,7 +5,7 @@ require 'spec_helper'
 describe Chingu::Input do
   it 'maps all defined Gosu input constants to Chingu symbols' do
     # Simpler if all the inputs are in a big hash.
-    input_names = Gosu.constants.select { |constant| constant =~ /^(?:Kb|Ms|Gp)/ }
+    input_names = Gosu.constants.grep(/^(?:Kb|Ms|Gp)/)
     input_names.delete_if do |name|
       name.to_s =~ /Range(?:Start|End)|Num$/ # Special entries.
     end
