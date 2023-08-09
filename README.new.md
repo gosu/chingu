@@ -25,7 +25,7 @@ asset-handling, a basic re-usable game object and automation of common tasks.
 ## QUICK START (TRY OUT THE EXAMPLES)
 
 Chingu comes packed with 25+ examples to give you a feel of the library, these
-examples can be found in the [[examples]] directory.
+examples can be found in the [examples/](/examples) directory.
 
 The examples start out simple, so you'll have no problem to follow along! watch out for the instructions
 in the title bar of each one, it will tell you how to interact with the example, movement is generally
