@@ -73,7 +73,7 @@ describe "Network" do
         @client.connect
         5.times do
           @client.update
-          sleep 0.01
+          sleep 0.1
         end
       end
 
