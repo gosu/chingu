@@ -59,107 +59,122 @@ Links to some of the projects using/depending on Chingu:
 ...is your game missing? give me a message (or PR) and it'll be added!
 
 ## THE STORY
+
 The last years I've dabbled around a lot with game development, I've developed games in both
 Rubygame and Gosu (gamebox too, looks interesting). Rubygame is a very capable framework with
 a lot of functionality (collisions detection, really good event system, etc). Gosu is way more
 minimalistic but also faster with OpenGL acceleration, Gosu isn't likely to get too complex
 since it does what it should well and fast.
 
-After 10+ of game prototypes and some finished smaller games I started to see patterns each time
-I started a new game, like, making classes with a x and y position, with images, or other-parameters
-that I called on my update/draw in the main game loop. This came to be the basic `Chingu::GameObject`
-which encapsulates Gosu's `Image.draw_rot` and enables automatic updating/drawing through "game_objects".
+After 10+ game prototypes and some finished smaller games I started to see patterns each time
+I started a new game, like, making classes with a x and y position, with images, or other parameters,
+and that each object has either a `update` or `draw` method that needs to be called in the main game loop.
+This came to be the basic `Chingu::GameObject` which encapsulates Gosu's `Image.draw_rot` and enables
+automatic updating/drawing through the `game_objects` readable attribute.
 
-There was always a huge big chunk of code checking keyboard-events in the main update loop, borrowing ideas
-from Rubygame this has now become `@player.keyboard(:left => :move_left, :space => :fire, ... etc.`
+There was always a big chunk of code checking keyboard-events in my main `update` loop, so borrowing ideas
+from Rubygame this has now become a single method: `@player.keyboard(:left => :move_left, :space => :fire, ... etc.`
 
 ## CORE OVERVIEW
+
 Chingu consists of the following core classes / concepts:
 
 ### Chingu::Window
-The main window, use it at you use a Gosu::Window. in addition it comes with goodies, it'll Calculates the
-framerate, takes care of states, handles chingu-formated input, updates and draws `BasicGameObject` /
-`GameObjects` automatically. Available for you as `$window` (Yes, that's the only global Chingu has).
 
+The main window, use it at you use a **Gosu::Window**. in addition it comes with goodies, it calculates the
+framerate, takes care of states, handles chingu-formated input, updates and draws **BasicGameObject** /
+**GameObjects** automatically. Available for you as `$window` (Yes, that's the only global Chingu has).
 
-You can also set various global settings. For example, `self.factor=3`, will make all fortcomming GameObjects
+You can also set various global settings. For example, `self.factor = 3`, will make all forthcoming GameObjects
 scale 3 times, useful for adjusting the game to different screen dimensions!
 
 ### Chingu::GameObject
+
 Use this for all your in-game objects, the player, enemies, bullets, powerups, loot laying around... (you get the idea)
 
 It's *very* reusable and doesn't contain any game-logic (that's up to you!), it only contains some logic to
-draw it on screen. If you do `GameObject.create` instead of `new` Chingu will save the object in the `game_object` list for automatic updates/draws callbacks.
-
+draw it on screen. If you do `GameObject.create` instead of `GameObject.new` Chingu will save the object in the `game_object` list for automatic updates/draws callbacks.
 
 GameObjects also have the nicer Chingu input-mapping: `@player.input = { :left => :move_left, :right => :move_right, :space => :fire}`, isn't that cool?
 
-Has either a Chingu::Window or a Chingu::GameState as parent.
+A GameObject has either a Chingu::Window or a Chingu::GameState as parent.
 
 ### Chingu::BasicGameObject
-For those who think GameObject is a little too fat, there's BasicGameObject (GameObject inherits from
+
+For those who think GameObject is a little too fat, there's **BasicGameObject** (GameObject inherits from
 BasicGameObject).
 
 BasicGameObject is just an empty slate (no x, y, image or drawing logic) for you to build on top of,
-it *can* be extended with Chingu's trait-system though. The `new` vs `create` behavior of GameObject
+it can be extended with Chingu's *trait-system* though. The `new` vs `create` behavior of GameObject
 comes from BasicGameObject.
 
 `BasicGameObject#parent` points to either `$window` or a game state and is automatically set on creation time.
 
 ### Chingu::GameStateManager
+
 Keeps track of the game states with a stack-based system utilizing `push_game_state` and `pop_game_state`.
 
 ### Chingu::GameState
+
 A standalone game state with a game loop that can be activated and deactivated to control game flow,
 a game state is very much like a Gosu window, it defines `update` and `draw` like a standalone window.
 
-It comes with 2 extras that a Gosu window doesn't have; `setup` (called when activated) and `finalize`
-(called when deactivated), called respectively when the state is *pushed* or *popped*.
+It comes with 2 extra callbacks that a Gosu window doesn't have; `setup` (called when activated) and `finalize`
+(called when deactivated), they're called respectively when the state is *pushed* or *popped*.
 
-Note that when using game states, the flow of draw/update/button_up/button_down is:
+Note that when using game states, the flow of `draw`/`update`/`button_up`/`button_down` is:
 Chingu::Window -> Chingu::GameStateManager -> Chingu::GameState.
 
 For example, if you were to call `push_game_state(Level)` inside game state `Menu`, when `Level` finalizes
 it will go back to `Menu`.
 
 ### Traits
+
 Traits are *extensions* (or plugins if you will) to BasicGameObjects included on class-level,
 Their aim is to encapsulate common, reusable behavior into modules for easy inclusion in your game classes.
-
 
 Making a trait is easy, just create an ordinary module with the functions `setup_trait`, `update_trait` and/or
 `draw_trait`.
 
-NOTE: all traits currently have to be namespaced to Chingu::Traits for "traits" to work inside GameObject
+**NOTE**: all traits currently have to be namespaced to Chingu::Traits for `traits` to work inside GameObject
 classes.
 
 ## OTHER CLASSES / HELPERS
 
 ### Chingu::Text
-Makes use of `Image#from_text`, more rubyish and powerful, in it's core it is
-another Chingu::GameObject + a image made with Image#from_text.
+
+Makes use of `Image#from_text`, giving it a more rubyish and powerful aspect, in it's core its
+another Chingu::GameObject + a image made with `Image#from_text`.
 
 ### Chingu::Animation
-Load and interact with tile-based animations. loop, bounce and access invidual frame(s) easily!
+
+Load and interact with tile-based animations, loop, bounce and access invidual frame(s) easily!
 adding the following `@image = @animation.next` in your `Player#update` is usually enough to get
 you started.
 
 ### Chingu::Parallax
-A class for easy parallax scrolling, add layers with different damping, move the camera to generate a new snapshot, see `example3.rb` for more.
 
-NOTE: Doing `Parallax.create` when using a trait viewport will give bad results, if you need parallax
-together with a viewport do `Parallax.new` and then manually do `parallax.update/draw`.
+A class for easy parallax scrolling, add layers with different damping, move the camera to generate a
+new snapshot, see `example3.rb` for more.
+
+**NOTE**: Doing `Parallax.create` when using a trait viewport will give bad results, if you need parallax
+together with a viewport do `Parallax.new` and then manually do `parallax.update`/`draw`.
 
 ### Chingu::HighScoreList
+
 A class to keep track of high scores, it can limit the list, automatically sort based on score,
-save/load to hard drive, see `example13.rb` for more.
+save/load to hard drive, and others useful things! see `example13.rb` for more.
 
 ### Chingu::OnlineHighScoreList
-A class to keep/sync online highscores at http://gamercv.com/. it is a lot more fun to compete
-with others people across the world for highscores than a local list.
+
+~~A class to keep/sync online highscores at http://gamercv.com/. it is a lot more fun to compete
+with others people across the world for highscores than a local list.~~
+
+**NOTE**: gamercv no longer works at the time of this writing.
 
 ### Various Helpers
-Both `$window` and game states have some new graphical helpers, as of now there are only 3,
+
+Both `$window` and game states have some new fancy graphical helpers, as of now there are only 3,
 but they're quite useful:
 
 ```ruby
@@ -170,7 +185,7 @@ but they're quite useful:
   draw_rect()     # Draws a rect
 ```
 
-If you base your game objects on GameObject (or BasicGameObject) you get:
+If you base your custom game objects from GameObject (or BasicGameObject) you get:
 
 ```ruby
   Enemy.all                 # Returns an Array of all Enemy-instances
@@ -182,9 +197,10 @@ If you base your game objects on GameObject (or BasicGameObject) you get:
 ## BASICS / EXAMPLES
 
 ### Chingu::Window
+
 With Gosu your main window inherits from Gosu::Window, in Chingu we use Chingu::Window instead.
-It's a basic Gosu::Window with extra cheese on top of it, like, keyboard handling,
-automatic update/draw calls for all gameobjects, fps counting, etc.
+It's a basic Gosu::Window with extra cheese on top of it, like keyboard handling,
+automatic `update`/`draw` calls for all gameobjects, fps counting, etc.
 
 You're probably familiar with this very common Gosu pattern:
 
@@ -212,7 +228,7 @@ You're probably familiar with this very common Gosu pattern:
   end
 
   class Player
-    attr_accessor :x,:y,:image
+    attr_accessor :x, :y, :image
 
     def initialize(options)
       @x = options[:x]
@@ -244,20 +260,20 @@ Chingu doesn't change the fundamental concept/flow of Gosu, but it will make the
   #
   class Game < Chingu::Window
     def initialize
-      super       # This is always needed if you override Window#initialize
-      #
+      super # This is always needed if you override Window#initialize
+
       # Player will automatically be updated and drawn since it's a Chingu::GameObject
-      # You'll need your own Chingu::Window#update and Chingu::Window#draw after a while, but just put #super there and Chingu can do its thing.
-      #
+      # You'll need your own Chingu::Window#update and Chingu::Window#draw after a
+      # while, but just put #super there and Chingu can do its thing.
       @player = Player.create
       @player.input = {:left => :move_left, :right => :move_right}
     end    
   end
 
-  #
   # If we create classes from Chingu::GameObject we get stuff for free.
-  # The accessors image,x,y,zorder,angle,factor_x,factor_y,center_x,center_y,mode,alpha.
+  # The accessors image, x, y, zorder, angle, factor_x, factor_y, center_x, center_y, mode, alpha.
   # We also get a default #draw which draws the image to screen with the parameters listed above.
+  #
   # You might recognize those from #draw_rot - http://www.libgosu.org/rdoc/classes/Gosu/Image.html#M000023
   # And in it's core, that's what Chingu::GameObject is, an encapsulation of draw_rot with some extras.
   # For example, we get automatic calls to draw/update with Chingu::GameObject, which usually is what you want.
@@ -282,10 +298,11 @@ Chingu doesn't change the fundamental concept/flow of Gosu, but it will make the
 
 Roughly 50 lines of code became 26 more powerful lines, (you can do `@player.angle = 100` for example).
 
-If you've worked with Gosu for a while you're probably tired of passing around your game's window as parameter,
-Chingu solves this (as many other developers do) with a global variable: `$window`. Yes, globals are bad and can make the program cryptic, but in this case it makes sense. It's used under the hood in various places.
+If you've worked with Gosu for a while you're probably tired of passing around your game's window as a parameter,
+Chingu solves this (as many other developers do) with a global variable: `$window`. Yes, globals are bad and can make
+the program cryptic, but in this case it makes sense. It's used under the hood in various places.
 
-The basic flow of an Chingu::Window once `show` is called can be seen below
+The basic flow of a Chingu::Window once `show` is called can be seen below
 (this is called each game iteration or tick):
 
   - `Chingu::Window#draw` is called
@@ -303,6 +320,7 @@ The basic flow of an Chingu::Window once `show` is called can be seen below
 ...the above is repeated over and over again until your game exits.
 
 ### Chingu::GameObject
+
 This is our basic game entity class, meaning most of your game objects (players, enemies, bullets, etc)
 should inherite from Chingu::GameObject.
 
@@ -318,9 +336,7 @@ passed to `GameObject#new` when creating a new object.
 An example using almost all arguments looks like this:
 
 ```ruby
-  #
   # You probably recognize the arguments from http://www.libgosu.org/rdoc/classes/Gosu/Image.html#M000023
-  #
   @player = Player.new(:image => Image["player.png"],
                        :x=>100,
                        :y=>100,
@@ -331,9 +347,7 @@ An example using almost all arguments looks like this:
                        :center_x=>0,
                        :center_y=>0)
 
-  #
   # A shortcut for the above line would be
-  #
   @player = Player.new(:image => "player.png",
                        :x=>100,
                        :y=>100,
@@ -342,42 +356,35 @@ An example using almost all arguments looks like this:
                        :factor=>10,
                        :center=>0)
 
-  #
   # I've tried doing sensible defaults:
   # x/y = [middle of the screen]  for super quick display where it should be easy in sight)
   # angle = 0                     (no angle by default)
   # center_x/center_y = 0.5       (basically the center of the image will be drawn at x/y)
   # factor_x/factor_y = 1         (no zoom by default)
-  #
   @player = Player.new
 
-  #
   # By default Chingu::Window calls update & draw on all GameObjects in it's own update/draw.
   # If this is not what you want, use :draw and :update
-  #
   @player = Player.new(:draw => false, :update => false)
 ```
 
 ### Input
-One of the principal things I wanted to is to have a  more natural way to handle input.
 
-You can define input -> actions on Chingu::Window, Chingu::GameState and Chingu::GameObject,
+One of the principal things I wanted  to have is a more natural way to handle input.
+
+You can define input and actions on Chingu::Window, Chingu::GameState and Chingu::GameObject,
 
 Like this:
 
 ```ruby
-  #
   # When left arrow is pressed, call @player.turn_left... and so on
-  #
   @player.input = { :left => :turn_left,
                     :right => :turn_right,
                     :left => :halt_left,
                     :right => :halt_right }
 
 
-  #
   # In Gosu the equivalent would be:
-  #
   def button_down(id)
     @player.turn_left		if id == Button::KbLeft
     @player.turn_right	if id == Button::KbRight
@@ -392,7 +399,6 @@ Like this:
 Another more complex example:
 
 ```ruby
-  #
   # So what happens here?
   #
   # Pressing P would create an game state out of class Pause, cache it and activate it.
@@ -400,8 +406,6 @@ Another more complex example:
   # Holding down LEFT would call Play#move_left on every game iteration
   # Holding down RIGHT would call Play#move_right on every game iteration
   # Releasing SPACE would call Play#fire
-  #
-
   class Play < Chingu::GameState
     def initialize
       self.input = { :p => Pause,
@@ -430,7 +434,6 @@ Or `:hold_left`, `:down_left` instead of `:holding_left`?
 `:holding_left` sounds like something that's happening over a period of time, not a single trigger, which corresponds well to how it works.
 
 And with the default `:space => :something` you would imagine that `:something` is called once. You press `:space` once, `:something` is executed once, it makes sense.
-
 
 ### GameState / GameStateManager
 Chingu incorporates a basic push/pop game state system ([as discussed here](http://www.gamedev.net/community/forums/topic.asp?topic_id=477320)).
@@ -474,17 +477,13 @@ Looks familiar? You can activate the above game state in 2 ways:
 ```ruby
   class Game < Chingu::Window
     def initialize
-      #
       # 1) Create a new Intro-object and activate it (pushing to the top).
       # This version makes more sense if you want to pass parameters to the gamestate, for example:
       # push_game_state(Level.new(:level_nr => 10))
-      #
       push_game_state(Intro.new)
 
-      #
       # 2) This leaves the actual object-creation to the game state manager.
       # Intro#initialize() is called, then Intro#setup()
-      #
       push_game_state(Intro)
     end
   end
@@ -495,38 +494,30 @@ Another example:
 ```ruby
   class Game < Chingu::Window
     def initialize
-      #
       # We start by pushing Menu to the game state stack, making it active as it's the only state on stack.
       #
       # :setup => :false will skip setup() from being called (standard when switching to a new state)
-      #
       push_game_state(Menu, :setup => false)
 
-      #
       # We push another game state to the stack, Play. We now have 2 states, which active being first / active.
       #
       # :finalize => false will skip finalize() from being called on game state
       # that's being pushed down the stack, in this case Menu.finalize().
-      #
       push_game_state(Play, :finalize => false)
 
-      #
       # Next, we remove Play state from the stack, going back to the Menu-state. But also:
       # .. skipping the standard call to Menu#setup     (the new game state)
       # .. skipping the standard call to Play#finalize  (the current game state)
       #
       # :setup => false can for example be useful when pop'ing a Pause game state. (see example4.rb)
-      #
       pop_game_state(:setup => false, :finalize => :false)
 
-      #
       # Replace the current game state with a new one.
       #
       # :setup and :finalize options are available here as well but:
       # .. setup and finalize are always skipped for Menu (the state under Play and Credits)
       # .. the finalize option only affects the popped game state
       # .. the setup option only affects the game state you're switching to
-      #
       switch_game_state(Credits)
     end
   end
@@ -534,12 +525,12 @@ Another example:
 
 A GameState in Chingu is just a class with the following instance methods:
 
-- `initialize`      - as you might expect, called when GameState is created.
-- `setup`           - called each time the game state becomes active.
-- `button_down(id)` - called when a button is down.
-- `button_up(id)`   - called when a button is released.
-- `update()`        - just as in your normal game loop, put your game logic here.
-- `draw()`          - just as in your normal game loop, put your rendering logic here.
+- `initialize`      - as you might expect, called when GameState is created
+- `setup`           - called each time the game state becomes active
+- `button_down(id)` - called when a button is down
+- `button_up(id)`   - called when a button is released
+- `update`        - just as in your normal game loop, put your game logic here
+- `draw`          - just as in your normal game loop, put your rendering logic here
 - `finalize()`      - called when a game state de-activated (for example by pushing a new one on top with `push_game_state`)
 
 Chingu::Window automatically creates a `@game_state_manager` instance and makes it accessible in our
@@ -575,19 +566,21 @@ Or Chingu's shortcut:
   end
 ```
 
-Chingu's input handler will detect that Menu is a GameState class, and willcreate a new instance and activate it with `push_game_state`.
+Chingu's input handler will detect that Menu is a GameState class, and will create a new instance and activate it with `push_game_state`.
 
-GOTCHA: Currently you can't switch to a new game state from Within `GameState#initialize` or `GameState#setup`
+**GOTCHA**: Currently you can't switch to a new game state from Within `GameState#initialize` or `GameState#setup`
 
 ### Premade game states
-Chingu comes with some pre-made game states, a simple but useful one is GameStates::Pause, once pushed it will
-draw the previous game state but not update it -- effectively pausing it.
+
+Chingu comes with some pre-made game states, a simple but useful one is **GameStates::Pause**, once pushed it will
+draw the previous game state but will not update it, effectively pausing it.
 
 Some others are:
 
 #### GameStates::EnterName
+
 A gamestate where a gamer can select letters from an A-Z list, construct his alias and
-when done selecting "GO!" a custom-specified callback will be called with the name/alias as argument.
+when done selecting "GO!" will call a custom-specified callback will be called with the name/alias as argument.
 
 ```ruby
   push_game_state GameStates::EnterName.new(:callback => method(:add))
@@ -597,11 +590,12 @@ when done selecting "GO!" a custom-specified callback will be called with the na
   end
 ```
 
-Combine GameStates::EnterName with class OnlineHighScoreList, a free acount at @ www.gamercv.com and you have a premade stack to provide your 48h gamecompo entry with online high scores that adds an extra dimension to your game, see `example16.rb` for a full working example of this.
+Combine GameStates::EnterName with class OnlineHighScoreList, a free acount at www.gamercv.com and you have a premade stack to provide your 48h gamecompo entry with online high scores that adds an extra dimension to your game, see `example16.rb` for a full working example of this.
 
 #### GameStates::Edit
-The biggest and most usable is GameStates::Edit which enables fast'n easy level-building with game objects.
-Start `example19.rb` and press `E` to get a full example.
+
+The biggest and most usable is GameStates::Edit which enables fast 'n easy level-building with game objects.
+Start `example19.rb` and press E to get a full example.
 
 Edit commands / shortcuts:
   - F1: Help screen
@@ -639,7 +633,7 @@ Below keys operates on all currently selected game objects:
 
 Move the mouse cursor close to the window border to scroll the viewport if your game state has one.
 
-If you're editing game state (think `BigBossLevel`) the editor will save it to big_boss_level.yml by default,
+If you're editing a game state (think `BigBossLevel`) the editor will save it to big_boss_level.yml by default,
 all the game objects in that file are then easily loaded with the `load_game_objects` command.
 
 Both `Edit.new` and `load_game_objects` take parameters as
@@ -655,8 +649,9 @@ Both `Edit.new` and `load_game_objects` take parameters as
 *(This text is under development)*
 
 ### The setup-method
-If `setup` is available in a instance of Chingu::GameObject, Chingu::Window and Chingu::GameState it will automatically be called, this is the perfect spot to include various setup/init-tasks like setting colors or loading animations (if you're using the animation-trait).
 
+If `setup` is available in a instance of Chingu::GameObject, Chingu::Window and Chingu::GameState, then it will automatically
+be called, this is the perfect spot to include various setup/init-tasks like setting colors or loading animations (if you're using the animation-trait).
 
 You could also override `initialize` for this purpose but it's been proven to be prone to errors again
 and again.
@@ -681,8 +676,7 @@ Compare the 2 snippets below:
 ```
 
 ## Traits
-Traits (oftentimes called behaviors in other frameworks) are a way of adding logic to any class inheriting from BasicGameObject / GameObject.
-
+Traits (oftentimes called behaviors in other frameworks) are a way of adding logic to any class inheriting from BasicGameObject/GameObject.
 
 Chingus trait-implementation is just an ordinary ruby modules with 3 special functions:
  - `setup_trait`
@@ -692,8 +686,8 @@ Chingus trait-implementation is just an ordinary ruby modules with 3 special fun
 Each of those 3 functions must call `super` to continue the trait-chain.
 
 Inside a certain trait-module you can also have a module called `ClassMethods`, functions inside that module
-will be added (yes you guessed it) as *class methods*. If `initialize_trait` is defined inside `ClassMethods`
-it will be called on class-evaluation time (basicly on the trait `:some_trait` line).
+will be added (yes, you guessed it) as *class methods*. If `initialize_trait` is defined inside `ClassMethods`
+it will be called on class-evaluation time (basically on the trait `:some_trait` line).
 
 A simple example trait could look like this:
 
@@ -702,9 +696,7 @@ A simple example trait could look like this:
     module Trait
       module Inspect
 
-        #
-        # methods namespaced to ClassMethods get's extended as ... class methods!
-        #
+        # methods namespaced to ClassMethods are extended as... class methods!
         module ClassMethods
           def initialize_trait(options)
             # possible initialize stuff here
@@ -715,17 +707,13 @@ A simple example trait could look like this:
           end
         end
 
-        #
         # Since it's namespaced outside ClassMethods it becomes a normal instance-method
-        #
         def inspect
           "Hello I'm an #{self.class.to_s}"
         end
 
-        #
         # setup_trait is called when a object is created from a class that included the trait
         # you most likely want to put all the traits settings and option parsing here
-        #
         def setup_trait(options)
           @long_inspect = true
         end
@@ -737,12 +725,14 @@ A simple example trait could look like this:
   class Enemy < GameObject
     trait :inspect    # includes Chingu::Trait::Inspect and extends Chingu::Trait::Inspect::ClassMethods
   end
+
   10.times { Enemy.create }
+
   Enemy.inspect           # => "There's 10 active instances of class Enemy"
   Enemy.all.first.inspect # => "Hello I'm a Enemy"
 ```
 
-Example of using traits `velocity` and `timer`, we also use `GameObject#setup` which will automtically
+Example of using traits `velocity` and `timer`, we also use `GameObject#setup` which will automatically
 be called at the end of `GameObject#initialize`. It's often a little bit cleaner to use `setup` than to
 override `initialize`.
 
@@ -754,20 +744,16 @@ override `initialize`.
       @red = Gosu::Color.new(0xFFFF0000)
       @white = Gosu::Color.new(0xFFFFFFFF)
 
-      #
       # some basic physics provided by the velocity-trait
       # These 2 parameters will affect @x and @y every game-iteration
       # So if your ogre is standing on the ground, make sure you cancel out the effect of @acceleration_y
-      #
       self.velocity_x = 1       # move constantly to the right
       self.acceleration_y = 0.4 # gravity is basicly a downwards acceleration
     end
 
     def hit_by(object)
-      #
       # during() and then() is provided by the timer-trait
       # flash red for 300 millisec when hit, then go back to normal
-      #
       during(100) { self.color = @red; self.mode = :additive }.then { self.color = @white; self.mode = :default }
     end
   end
@@ -775,7 +761,7 @@ override `initialize`.
 
 The flow for a game object then becomes:
 
-  - creating a GameObject class X ( with a `trait :bounding_box, :scale => 0.80` )
+  - creating a GameObject class X (with a `trait :bounding_box, :scale => 0.80`)
     1. trait gets merged into X, instance and class methods are added
     2. `GameObject.initialize_trait(:scale => 0.80)` (`initialize_trait` is a class-method!)
   - creating an instance of X
@@ -783,14 +769,15 @@ The flow for a game object then becomes:
     2. `GameObject#setup_trait(options)`
     3. `GameObject#setup(options)`
   - each game iteration or tick
-    3. `GameObject#draw_trait`
-    4. `GameObject#draw`
-    5. `GameObject#update_trait`
-    6. `GameObject#update`
+    1. `GameObject#draw_trait`
+    2. `GameObject#draw`
+    3. `GameObject#update_trait`
+    4. `GameObject#update`
 
 There's a couple of traits included by default in Chingu:
 
 ### Trait Sprite
+
 This trait fuels GameObject, A GameObject is basically a  BasicGameObject + the sprite-trait.
 
 Adds accessors `x`, `y`, `angle`, `factor_x`, `factor_y`, `center_x`, `center_y`, `zorder`, `mode`,
@@ -799,6 +786,7 @@ Adds accessors `x`, `y`, `angle`, `factor_x`, `factor_y`, `center_x`, `center_y`
 See documentation for GameObject to understand how it works.
 
 ### Trait Timer
+
 Adds timer functionality to your game object
 
 ```ruby
@@ -809,11 +797,13 @@ Adds timer functionality to your game object
 ```
 
 ### Trait Velocity
+
 Adds accessors `velocity_x`, `velocity_y`, `acceleration_x`, `acceleration_y`, `max_velocity`
 to game object. They modify x and y as you would expect, *speed / angle will come*.
 
 ### Trait Bounding Box
-Adds accessor `bounding_box`, which returns an instance of class Rect based on current image
+
+Adds accessor `bounding_box`, which returns an instance of class **Rect** based on current image
 `size`, `x`, `y`, `factor_x`, `factor_y`, `center_x`, `center_y`.
 
 You can also scale the calculated rect with trait-options:
@@ -832,6 +822,7 @@ Inside your object you will also get a `cache_bounding_box`, after that the boun
 it will not longer adapt to size-changes.
 
 ### Trait Bounding Circle
+
 Adds accessor `radius`, which returns an Integer based on the current image's `size`, `factor_x` and
 `factor_y`, you can also scale the calculated radius with trait-options:
 
@@ -847,7 +838,8 @@ Inside your object you will also get a `cache_bounding_circle`. After that `radi
 not longer adapt to size-changes.
 
 ### Trait Animation
-Automatically load animations depending on the class-name, useful when having a lot of simple classes whose
+
+Automatically load animations depending on the class name, useful when having a lot of simple classes whose
 main purpose is displaying an animation.
 
 
@@ -868,12 +860,14 @@ Assuming the below code is included in a class FireBall.
 ```
 
 ### Trait Effect
+
 Adds accessors `rotation_rate`, `fade_rate` and `scale_rate` to game object, they modify `angle`, `alpha`
 and `factor_x`/`factor_y` each update.
 
 Since this is pretty easy to do yourself this trait might be up for deprecation.
 
 ### Trait Viewport
+
 A game state trait. Adds accessor `viewport`, `viewport.x` and `viewport.y` too.
 
 Basically what `viewport.x = 10` will do is draw all game objects 10 pixels to the left of their ordinary
@@ -890,7 +884,7 @@ This is great for scrolling games! You also have:
   viewport.x_target = 100               # This will move viewport towards X-coordinate 100, the speed is determined by the lag-parameter.
 ```
 
-NOTE: Doing `Parallax.create` when using a trait viewport will give bad results.
+**NOTE**: Doing `Parallax.create` when using a trait viewport will give bad results.
 If you need parallax together with a viewport do `Parallax.new` and then manually do `parallax.update`/`draw`.
 
 ### Trait Collision Detection
@@ -907,24 +901,21 @@ Adds class and instance methods for basic collision detection.
     player.die!
   end
 
-  #
   # each_collision automatically tries to access #radius and #bounding_box to see what a certain game object provides
   # It knows how to collide radius/radius, bounding_box/bounding_box and radius/bounding_box !
   # Since You're not explicity telling what collision type to use it might be slighty slower.
-  #
   [Player, PlayerBullet].each_collision(Enemy, EnemyBullet) do |friend, foe|
     # do something
   end
 
-  #
   # You can also give each_collision() an array of objects.
-  #
   Ball.each_collsion(@array_of_ground_items) do |ball, ground|
-    # do something
+    # do something...
   end
 ```
 
 ### Trait Asynchronous
+
 Allows your code to specify a GameObject's behavior asynchronously, including
 tweening, movement and even method calls. Tasks are added to a queue that is
 processed in order; the task at the front of the queue is updated each tick
@@ -946,19 +937,20 @@ and will be removed when it has finished.
   end
 ```
 
-Currently available tasks are `wait(timeout, &condition)`, `tween(timeout,
-properties)`, `call(method, *arguments)` and `exec { ... }`.
+Currently available tasks are `wait(timeout, &condition)`, `tween(timeout, properties)`,
+`call(method, *arguments)` and `exec { ... }`.
 
 For a more complete example of how to use this trait, see
 `example_async.rb`.
 
 ### (IN DEVELOPMENT) Trait Retrofy
+
 Providing easier handling of the "retrofy" effect (non-blurry zoom).
 
 Aims to help out when using zoom-factor to create a retro feeling with big pixels, provides `screen_x` and
 `screen_y` which takes the zoom into account
 
-Also provides new code for `draw` which uses `screen_x` / `screen_y` instead of `x` / `y`
+Also provides new code for `draw` which uses `screen_x`/`screen_y` instead of `x` / `y`
 
 ### Assets / Paths
 
@@ -972,7 +964,9 @@ You might wonder why this is necessary in the pure Gosu example:
 Well, it enables you to start your game from any directory and still find your assets (pictures, samples,
 fonts, etc.) correctly.
 
-For a local development version this might not be that important, you're likely to start the game from the root-directory, but! As soon as you try to release it (for example, to windows with [OCRA](http://github.com/larsch/ocra/tree/master)) you'll run into trouble and you wont' like that.
+For a local development version this might not be that important, you're likely to start the game
+from the root-directory, but! As soon as you try to release it (for example, to windows with
+[OCRA](http://github.com/larsch/ocra/tree/master)) you'll run into trouble and you wont' like that.
 
 Chingu solves this problem behind the scenes for the most common assets. The 2 lines above can be replaced with:
 
@@ -1007,9 +1001,10 @@ Add your own searchpaths like this:
 
 This will add `/path/to/your/game/gfx` and `/path/to/your/game/samples` to Image and Sound.
 
-Thanks to Jacious of rubygame (https://github.com/rubygame/rubygame) for his named resource code powering this.
+Thanks to Jacious of RubyGame (https://github.com/rubygame/rubygame) for his named resource code powering this.
 
 ### Text
+
 Text is a class to give the use of Gosu::Font a more rubyish feel and fit it better into Chingu.
 
 ```ruby
@@ -1031,7 +1026,10 @@ number of changeable properties, `x`, `y`, `zorder`, `angle`, `factor_x`, `color
 Set a new x or angle or color and it will instantly update on screen.
 
 ## DEPRECATIONS
-Chingu (as all libraries) will sometimes break an old API. Naturally we try to not do this, but sometimes it's nessesary to take the library forward. If your old game stops working with a new chingu it could depend on some of the following:
+
+Chingu (as all libraries) will sometimes break an old API. Naturally we try to not do this,
+but sometimes it's necessary to take the library forward. If your old game stops working with
+a new chingu it could depend on some of the following:
 
 Listing game objects:
 ```ruby
@@ -1055,6 +1053,7 @@ We gained a lot of speed breaking that API.
 ## MISC / FAQ
 
 ### How do I access my main-window easily?
+
 Chingu keeps a global variable, `$window`, which contains the principal Chingu::Window instance,
 since Chingu::Window is just Gosu::Window + some cheese you can do `$window.button_down?`, `$window.draw_line`,
 etc. From anywhere.
@@ -1062,11 +1061,11 @@ etc. From anywhere.
 See http://www.libgosu.org/rdoc/classes/Gosu/Window.html for a full set of methods.
 
 ### How did you decide on naming of methods / classes?
-There's 1 zillion ways of naming stuff, as a general guideline I've tried to follow Gosu's way ofnaming.
 
+There's 1 zillion ways of naming stuff, as a general guideline I've tried to follow Gosu's way of naming.
 
 If Gosu didn't have a good name for a certain thing/method, then I'll check Ruby itself and Rails since alot of
-Ruby-devs are familiar with Rails.
+Ruby devs are familiar with Rails.
 
 `GameObject.all` is naming straight from rails for example. Most stuff in GameObject follow the naming from
 Gosu's `Image#draw_rot`.
@@ -1082,11 +1081,13 @@ As far as possible, use correct rubyfied english; *game_objects*, not *gameobjec
 - There are a lot patterns in game development
 
 ## OPINIONS
+
 - Less code is usually better
 - Hash arguments FTW. And it becomes even better in 1.9
 - Don't separate too much from Gosus core-naming
 
 ## CREDITS:
+
 - Spooner (input-work, tests and various other patches)
 - Jacob Huzak (sprite-trait, tests etc)
 - Jacius of Rubygame (For doing cool stuff that's well documented as re-usable). So far `rect.rb` and `named_resource.rb` is straight outta Rubygame.
@@ -1139,36 +1140,43 @@ As far as possible, use correct rubyfied english; *game_objects*, not *gameobjec
 - A more robust game state <-> game_object system to connect them together.
 - FIX example4: :p => Pause.new  would Change the "inside_game_state" to Pause and make @player belong to Pause.
 
-
 ## Old History, now deprecated:
 
 ### 0.6 / 2009-11-21
+
 More traits, better input, fixes
 This file is deprecated -- see github commit-history instead!
 
 ### 0.5.7 / 2009-10-15
+
 See github commithistory.
 
 ### 0.5 / 2009-10-7
+
 Big refactor of GameObject. Now has BasicGameObject as base.
 A first basic "trait"-system where GameObject "has_traits :visual, :velocity" etc.
 Tons of enhancements and fixes. Speed optimization. More examples.
 
 ### 0.4.5 / 2009-08-27
+
 Tons of small fixes across the board.
 Started on GFX Helpers (fill, fill_rect, fill_gradient so far).
 A basic particle system (see example7.rb)
 
 ### 0.4.0 / 2009-08-19
+
 Alot of game state love. Now also works stand alone with pure gosu.
 
 ### 0.3.0 / 2009-08-14
+
 Too much to list. remade inputsystem. gamestates are better. window.rb is cleaner. lots of small bugfixes. Bigger readme.
 
 ### 0.2.0 / 2009-08-10
+
 tons of new stuff and fixes. complete keymap. gamestate system. moreexamples/docs. better game_object.
 
 ### 0.0.1 / 2009-08-05
+
 first release
 
 ---
