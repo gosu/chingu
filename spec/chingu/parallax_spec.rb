@@ -1,43 +1,46 @@
-require 'spec_helper'
+# frozen_string_literal: true
 
-module Chingu
-  describe Parallax do  
-    before :each do
-      @game = Chingu::Window.new
-      
-      # Gosu uses the paths based on where rspec is, not where this file is, so we need to do it manually!
-      Gosu::Image::autoload_dirs.unshift File.join(File.dirname(File.expand_path(__FILE__)), 'images')
+require "spec_helper"
+
+describe Chingu::Parallax do
+  before do
+    @window = Chingu::Window.new
+
+    # Add images/ to the resources load path
+    Gosu::Image.autoload_dirs
+               .prepend(File.expand_path("images", File.dirname(__FILE__)))
+  end
+
+  after do
+    @window.close
+  end
+
+  context "When adding layers" do
+    it "has 3 different ways of adding layers" do
+      subject << { image: "rect_20x20.png", repeat_x: true, repeat_y: true }
+      subject.add_layer(image: "rect_20x20.png", repeat_x: true, repeat_y: true)
+      subject << Chingu::ParallaxLayer.new(image: "rect_20x20.png", repeat_x: true, repeat_y: true)
+
+      expect(subject.layers.count).to eq(3)
     end
 
-    after :each do
-      @game.close
-    end
-    
-    describe "layers" do
-      it "should have 3 different ways of adding layers" do
-        subject << {:image => "rect_20x20.png", :repeat_x => true, :repeat_y => true}
-        subject.add_layer(:image => "rect_20x20.png", :repeat_x => true, :repeat_y => true)
-        subject << ParallaxLayer.new(:image => "rect_20x20.png", :repeat_x => true, :repeat_y => true)
+    it "has incrementing z-order" do
+      3.times do
+        subject.add_layer(image: "rect_20x20.png")
+      end
 
-        subject.layers.count.should equal 3
-      end
-      
-      it "should have incrementing zorder" do
-        3.times do
-          subject.add_layer(:image => "rect_20x20.png")
-        end
-        subject.layers[1].zorder.should equal (subject.layers[0].zorder + 1)
-        subject.layers[2].zorder.should equal (subject.layers[0].zorder + 2)
-      end
-      
-      it "should start incrementing zorder in layers from Parallax-instance zorder if available" do
-        parallax = Parallax.new(:zorder => 2000)
-        3.times { parallax.add_layer(:image => "rect_20x20.png") }
-        parallax.layers[0].zorder.should == 2000
-        parallax.layers[1].zorder.should == 2001
-        parallax.layers[2].zorder.should == 2002
-      end
-      
+      expect(subject.layers[1].zorder).to eq(subject.layers[0].zorder + 1)
+      expect(subject.layers[2].zorder).to eq(subject.layers[0].zorder + 2)
+    end
+
+    it "starts incrementing z-order in layers from Parallax-instance z-order if available" do
+      parallax = described_class.new(zorder: 2000)
+
+      3.times { parallax.add_layer(image: "rect_20x20.png") }
+
+      expect(parallax.layers[0].zorder).to eq(2000)
+      expect(parallax.layers[1].zorder).to eq(2001)
+      expect(parallax.layers[2].zorder).to eq(2002)
     end
   end
 end
