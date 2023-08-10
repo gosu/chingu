@@ -36,8 +36,8 @@ jobs:
 
     - name: Run tests (Linux)
       if: startsWith(matrix.platform, 'ubuntu-')
-      run: xvfb-run --auto-servernum rake test
+      run: xvfb-run --auto-servernum bundle exec rake
 
     - name: Run tests (not Linux)
-      if: !startsWith(matrix.platform, 'ubuntu-')
-      run: rake test
+      if: (!startsWith(matrix.platform, 'ubuntu-'))
+      run: bundle exec rake
