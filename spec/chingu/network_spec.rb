@@ -73,7 +73,9 @@ describe "Network" do
         @client.connect
         5.times do
           @client.update
-          sleep 0.1
+          # We need to use a large timeout value here to make this spec pass on
+          # Windows. https://stackoverflow.com/a/19441512
+          sleep 0.5
         end
       end
 
