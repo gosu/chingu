@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.license = "LGPL-2.1"
 
-  s.add_runtime_dependency("gosu", ["> 1.4.6"])
+  s.add_runtime_dependency("gosu", [">= 1.4.6"])
   s.add_development_dependency("rspec", ["~> 2.1.0"])
   s.add_development_dependency("rubocop", ["~> 1.50"])
 end
