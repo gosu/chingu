@@ -66,12 +66,22 @@ describe "Network" do
   describe Chingu::GameStates::NetworkClient do
     describe "#connect" do
       it "callbacks #on_connection_refused when connecting to closed port" do
+        # This spec keeps failing on Windows, even with longer sleep()
+        # durations to make up for Windows' attempts to reconnect:
+        # https://stackoverflow.com/a/19441512
+        # This means that NetworkClient may run into on_timeout instead of
+        # on_connection_refused on Windows, which seems acceptable.
+        return pending("broken on Windows") if Gem.win_platform?
+
         @client = described_class.new(address: "127.0.0.1",
                                       port: 55_421) # Assume its closed
         expect(@client).to receive(:on_connection_refused)
 
         @client.connect
-        5.times { @client.update }
+        5.times do
+          sleep 0.01
+          @client.update
+        end
       end
 
       it "does not callbacks #on_timeout when unable to connect for less time " \
@@ -83,8 +93,8 @@ describe "Network" do
         expect(@client).not_to receive(:on_timeout)
 
         5.times do
-          @client.update
           sleep 0.01
+          @client.update
         end
       end
 
@@ -98,7 +108,10 @@ describe "Network" do
         sleep 0.3
 
         expect(@client).to receive(:on_timeout)
-        5.times { @client.update }
+        5.times do
+          sleep 0.01
+          @client.update
+        end
       end
     end
   end
@@ -169,7 +182,10 @@ describe "Network" do
             @client.send_msg(packet)
           end
 
-          5.times { @server.update }
+          5.times do
+            sleep 0.01
+            @server.update
+          end
         end
       end
     end
@@ -183,7 +199,10 @@ describe "Network" do
           # its socket.
           data.each { |packet| @server.send_msg(@server.sockets[0], packet) }
 
-          5.times { @client.update }
+          5.times do
+            sleep 0.01
+            @client.update
+          end
         end
       end
     end
@@ -202,6 +221,7 @@ describe "Network" do
           end
 
           5.times do
+            sleep 0.1
             @client.update
             @client2.update
           end
@@ -228,6 +248,9 @@ describe "Network" do
       describe "Client to server" do
         before do
           @client.send_msg(@packet)
+
+          sleep 0.1
+
           @server.update
         end
 
@@ -251,6 +274,9 @@ describe "Network" do
         before do
           @server.update
           @server.send_msg(@server.sockets[0], @packet)
+
+          sleep 0.1
+
           @client.update
         end
 
@@ -275,6 +301,8 @@ describe "Network" do
         before do
           @server.update
           @server.broadcast_msg(@packet)
+
+          sleep 0.1
 
           @client.update
           @client2.update
