@@ -205,6 +205,7 @@ describe "Network" do
           end
 
           5.times do
+            sleep 0.1
             @client.update
             @client2.update
           end
