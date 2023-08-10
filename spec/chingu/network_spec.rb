@@ -71,7 +71,10 @@ describe "Network" do
         expect(@client).to receive(:on_connection_refused)
 
         @client.connect
-        5.times { @client.update }
+        5.times do
+          @client.update
+          sleep 0.01
+        end
       end
 
       it "does not callbacks #on_timeout when unable to connect for less time " \
@@ -228,6 +231,9 @@ describe "Network" do
       describe "Client to server" do
         before do
           @client.send_msg(@packet)
+
+          sleep 0.1
+
           @server.update
         end
 
@@ -251,6 +257,9 @@ describe "Network" do
         before do
           @server.update
           @server.send_msg(@server.sockets[0], @packet)
+
+          sleep 0.1
+
           @client.update
         end
 
@@ -275,6 +284,8 @@ describe "Network" do
         before do
           @server.update
           @server.broadcast_msg(@packet)
+
+          sleep 0.1
 
           @client.update
           @client2.update
