@@ -27,7 +27,8 @@ require 'yaml'
 require 'timeout'
 require 'socket'
 
-require File.join(CHINGU_ROOT,"chingu","require_all") # Thanks to http://github.com/tarcieri/require_all !
+require_relative 'chingu/require_all' # Thanks to
+                                      # http://github.com/tarcieri/require_all !
 
 # Seems like we need to include chingu/helpers first for BasicGameObject
 # and GameObject to get the correct class_inheritable_accssor
