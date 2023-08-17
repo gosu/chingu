@@ -21,34 +21,34 @@
 
 module Chingu
   module AsyncTasks
-    
+
     #
     # Halts processing of tasks until the passed-in block returns a
     # true value, or the timeout expires. If no block is given, behaves as if
     # the block returned nil.
     #
     class Wait < Chingu::Async::BasicTask
-      
+
       attr_accessor :timeout, :condition
       attr_reader :result
-      
+
       def initialize(timeout = nil, &condition)
         super()
         @result     = nil
         @age, @life = 0, timeout
         @condition  = condition
       end
-      
+
       def update(object)
         @age += $window.milliseconds_since_last_tick
         @result = (@condition and @condition[])
       end
-      
+
       def finished?
         !!@result or (@life != nil and @age >= @life)
       end
-      
+
     end
-    
+
   end
 end

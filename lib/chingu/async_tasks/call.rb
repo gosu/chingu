@@ -21,28 +21,28 @@
 
 module Chingu
   module AsyncTasks
-    
+
     #
     # Single method call as an asynchronous task.
     #
     class Call < Chingu::Async::BasicTask
-      
+
       def initialize(method, *args)
         super()
         @method, @args = method, args
         @finished = false
       end
-      
+
       def update(object)
         object.send(@method, *@args)
         @finished = true
       end
-      
+
       def finished?
         !!@finished
       end
-      
+
     end
-    
+
   end
 end

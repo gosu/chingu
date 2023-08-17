@@ -35,12 +35,12 @@ module Chingu
   #   def draw
   #     # screen manipulation here
   #   end
-  #        
+  #
   #   # Called when we enter the game state
   #   def setup
   #     @player.angle = 0   # point player upwards
   #   end
-  #    
+  #
   #   # Called when we leave the current game state
   #   def finalize
   #     push_game_state(Menu)   # switch to game state "Menu"
@@ -55,36 +55,36 @@ module Chingu
     include Chingu::Helpers::InputDispatcher    # Input dispatch-helpers
     include Chingu::Helpers::InputClient        # GameState can have it's own inputmap
     include Chingu::Helpers::ClassInheritableAccessor # adds classmethod class_inheritable_accessor
-    
+
     attr_reader :options
     attr_accessor :game_objects, :game_state_manager, :previous_game_state
-    
+
     class_inheritable_accessor :trait_options
     @trait_options = Hash.new
     def trait_options; self.class.trait_options; end
-            
+
     #
     # Adds a trait or traits to a certain game class
     # Executes a standard ruby "include" the specified module
     #
     def self.trait(trait, options = {})
-      
+
       if trait.is_a?(::Symbol) || trait.is_a?(::String)
         ## puts "trait #{trait}, #{options}"
         begin
           # Convert user-given symbol (eg. :timer) to a Module (eg. Chingu::Traits::Timer)
           mod = Chingu::Traits.const_get(Chingu::Inflector.camelize(trait))
-          
+
           # Include the module, which will add the containing methods as instance methods
           include mod
-                   
+
           # Does sub-module "ClassMethods" exists?
           # (eg: Chingu::Traits::Timer::ClassMethods)
           if mod.const_defined?("ClassMethods")
             # Add methods in scope ClassMethods as.. class methods!
             mod2 = mod.const_get("ClassMethods")
             extend mod2
-          
+
             # If the newly included trait has a initialize_trait method in the ClassMethods-scope:
             # ... call it with the options provided with the trait-line.
             if mod2.method_defined?(:initialize_trait)
@@ -97,7 +97,7 @@ module Chingu
       end
     end
     class << self; alias :has_trait :trait;  end
-    
+
     def self.traits(*traits)
       Array(traits).each { |trait| trait trait }
     end
@@ -107,22 +107,22 @@ module Chingu
       @options = options
       @game_objects = GameObjectList.new
       @input_clients = Array.new
-  
+
       # Game state manager can be run alone
       if defined?($window) && $window.respond_to?(:game_state_manager)
-        
-        # Since we place the init of previous_game_state here, game states can use it even 
+
+        # Since we place the init of previous_game_state here, game states can use it even
         # in initialize() if they call super first.
         @previous_game_state = $window.game_state_manager.current_game_state
-        
+
         $window.game_state_manager.inside_state = self
       end
-      
+
       setup_trait(options)
     end
-        
+
     #
-    # An unique identifier for the GameState-class, 
+    # An unique identifier for the GameState-class,
     # Used in game state manager to keep track of created states.
     #
     def to_sym
@@ -132,7 +132,7 @@ module Chingu
     def to_s
       self.class.to_s
     end
-    
+
     #
     # Returns a filename-friendly string from the current class-name
     #
@@ -142,12 +142,12 @@ module Chingu
     def filename
       Chingu::Inflector.underscore(self.class.to_s)
     end
-    
-    
+
+
     def setup
       # Your game state setup logic here.
     end
-    
+
     #
     # Called when a button is pressed and a game state is active
     #
@@ -155,7 +155,7 @@ module Chingu
       dispatch_button_down(id, self)
       @input_clients.each { |object| dispatch_button_down(id, object) unless object.paused? } if @input_clients
     end
-    
+
     #
     # Called when a button is released and a game state active
     #
@@ -163,18 +163,18 @@ module Chingu
       dispatch_button_up(id, self)
       @input_clients.each { |object| dispatch_button_up(id, object) unless object.paused? }   if @input_clients
     end
-        
+
     #
     # Calls update on each game object that has current game state as parent (created inside that game state)
     #
     def update
       dispatch_input_for(self)
-      
-      @input_clients.each { |game_object| dispatch_input_for(game_object) unless game_object.paused? }      
-      
+
+      @input_clients.each { |game_object| dispatch_input_for(game_object) unless game_object.paused? }
+
       @game_objects.update
     end
-    
+
     #
     # Calls Draw on each game object that has current game state as parent (created inside that game state)
     #
@@ -186,14 +186,14 @@ module Chingu
     def setup_trait(options);end
     def update_trait;end
     def draw_trait;end
-        
+
     #
     # Closes game state by poping it off the stack (and activating the game state below)
     #
     def close
       pop_game_state
     end
-    
+
     #
     # Closes main window and terminates the application
     #

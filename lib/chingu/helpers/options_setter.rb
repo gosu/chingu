@@ -7,7 +7,7 @@ module Chingu
     module OptionsSetter
 
       protected
-      
+
       #
       # Takes hash and sets the instance variables denoted by 'keys'
       # to 'values'. Uses setter, when available, otherwise simple
@@ -16,7 +16,7 @@ module Chingu
       #
       def set_options(options, defaults = {})
         options = defaults.merge(options)
-        
+
         options.each do |attr,value|
           setter = "#{attr}="
 
@@ -27,7 +27,7 @@ module Chingu
           end
         end
       end
-        
+
     end
   end
 end

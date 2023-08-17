@@ -22,7 +22,7 @@
 
 module Chingu
   module Inflector
-		
+
 		#
 		# "automatic_assets" -> "AutomaticAssets"
 		#
@@ -33,14 +33,14 @@ module Chingu
         lower_case_and_underscored_word.first.downcase + camelize(lower_case_and_underscored_word)[1..-1]
       end
     end
-		
+
     #
     # "Chingu::GameObject" -> "GameObject"
     #
     def Inflector.demodulize(class_name_in_module)
       class_name_in_module.to_s.gsub(/^.*::/, '')
     end
-    
+
 		#
 		# "FireBall" -> "fire_ball"
 		#
@@ -50,6 +50,6 @@ module Chingu
 			tr("-", "_").
 			downcase
 		end
-		
+
   end
 end

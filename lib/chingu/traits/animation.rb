@@ -34,17 +34,17 @@ module Chingu
     # Adds accessors animations -> Hash with all animations, hash-key is the name of the animation
     #
     module Animation
-    
+
       module ClassMethods
-    
+
         def initialize_trait(options = {})
           trait_options[:animation] = {:directory => "media", :play => true, :delay => 100}.merge(options)
         end
-        
+
       end
-			
-      def setup_trait(options)			
-        @animation_options = {:debug => false}.merge(options)        
+
+      def setup_trait(options)
+        @animation_options = {:debug => false}.merge(options)
         @animations = load_animations
         super
       end
@@ -67,18 +67,18 @@ module Chingu
         end
         return animations
       end
-      
+
       def animation
         @animations[:default]
       end
-      
+
       #
       # Returns all animations, then access invidual states with animations[:explode] etc.
       #
       def animations
         @animations
       end
-      
+
     end
   end
 end

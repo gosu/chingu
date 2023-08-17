@@ -28,28 +28,28 @@ module Chingu
 	class FPSCounter
     attr_reader :milliseconds_since_last_tick
     alias :dt :milliseconds_since_last_tick
-    
+
     #
     # Frames per second, access with $window.fps or $window.framerate
     #
     attr_reader :fps
     alias :framerate :fps
-    
+
     #
     # Total amount of game iterations (ticks)
     #
     attr_reader :ticks
-  
+
 		def initialize
 			@current_second = Gosu::milliseconds / 1000
 			@accum_fps = 0
 			@fps = 0
       @ticks = 0
-      
+
       @milliseconds_since_last_tick = 0
 			@last_value = Gosu::milliseconds
 		end
-  
+
     #
     # This should be called once every game-iteration, preferable in update()
     #

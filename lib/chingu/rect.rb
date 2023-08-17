@@ -49,7 +49,7 @@
 # 		union, union!
 # 		union_all, union_all!
 #
-# 
+#
 #++
 
 module Chingu
@@ -62,8 +62,8 @@ module Chingu
 # offsets are measured from the top-left corner of the screen, with greater
 # y offsets being lower. Thus, specifying the x and y offsets of the Rect
 # is equivalent to setting the location of its top-left corner.
-# 
-# In Rubygame, Rects are used for collision detection and describing 
+#
+# In Rubygame, Rects are used for collision detection and describing
 # the area of a Surface to operate on.
 class Rect < Array
 
@@ -71,16 +71,16 @@ class Rect < Array
 	# GENERAL
 	#++
 
-	# Create a new Rect, attempting to extract its own information from 
+	# Create a new Rect, attempting to extract its own information from
 	# the given arguments. The arguments must fall into one of these cases:
-	# 
+	#
 	#   - 4 integers +(x, y, w, h)+.
 	#   - 1 Rect or Array containing 4 integers +([x, y, w, h])+.
 	#   - 2 Arrays containing 2 integers each +([x,y], [w,h])+.
 	#   - 1 object with a +rect+ attribute which is a valid Rect object.
-	# 
+	#
 	# All rect core attributes (x,y,w,h) must be integers.
-	# 
+	#
 	def initialize(*argv)
 		case argv.length
 		when 1
@@ -97,17 +97,17 @@ class Rect < Array
 
 	# Extract or generate a Rect from the given object, if possible, using the
 	# following process:
-	# 
+	#
 	#  1. If it's a Rect already, return a duplicate Rect.
 	#  2. Elsif it's an Array with at least 4 values, make a Rect from it.
 	#  3. Elsif it has a +rect+ attribute., perform (1) and (2) on that.
 	#  4. Otherwise, raise TypeError.
-	# 
+	#
 	def Rect.new_from_object(object)
 		case(object)
 		when Rect
 			return object.dup
-		when Array 
+		when Array
 			if object.length >= 4
 				return Rect.new(object)
 			else
@@ -248,7 +248,7 @@ class Rect < Array
 	# Return the x and y coordinates of the top-left corner of the Rect
 	def topleft; return self[0,2].to_a; end
 
-	# Set the x and y coordinates of the top-left corner of the Rect by 
+	# Set the x and y coordinates of the top-left corner of the Rect by
 	# translating the Rect (adjusting the x and y offsets).
 	def topleft=(topleft)
 	    raise ArgumentError, "Rect#topright= takes an Array of form [x, y]." if topleft.size != 2
@@ -262,7 +262,7 @@ class Rect < Array
 	# Return the x and y coordinates of the top-right corner of the Rect
 	def topright; return self.right, self.at(1); end
 
-	# Set the x and y coordinates of the top-right corner of the Rect by 
+	# Set the x and y coordinates of the top-right corner of the Rect by
 	# translating the Rect (adjusting the x and y offsets).
 	def topright=(topright)
 	    raise ArgumentError, "Rect#topright= takes an Array of form [x, y]." if topright.size != 2
@@ -276,7 +276,7 @@ class Rect < Array
 	# Return the x and y coordinates of the bottom-left corner of the Rect
 	def bottomleft; return self.at(0), self.bottom; end
 
-	# Set the x and y coordinates of the bottom-left corner of the Rect by 
+	# Set the x and y coordinates of the bottom-left corner of the Rect by
 	# translating the Rect (adjusting the x and y offsets).
 	def bottomleft=(bottomleft)
 		raise ArgumentError, "Rect#bottomleft= takes an Array of form [x, y]." if bottomleft.size != 2
@@ -290,7 +290,7 @@ class Rect < Array
 	# Return the x and y coordinates of the bottom-right corner of the Rect
 	def bottomright; return self.right, self.bottom; end
 
-	# Set the x and y coordinates of the bottom-right corner of the Rect by 
+	# Set the x and y coordinates of the bottom-right corner of the Rect by
 	# translating the Rect (adjusting the x and y offsets).
 	def bottomright=(bottomright)
 		raise ArgumentError, "Rect#bottomright= takes an Array of form [x, y]." if bottomright.size != 2
@@ -303,7 +303,7 @@ class Rect < Array
 
 	# Return the x and y coordinates of the midpoint on the left side of the
 	# Rect.
-	def midleft; return self.at(0), self.centery; end	
+	def midleft; return self.at(0), self.centery; end
 
 	# Set the x and y coordinates of the midpoint on the left side of the Rect
 	# by translating the Rect (adjusting the x and y offsets).
@@ -318,7 +318,7 @@ class Rect < Array
 
 	# Return the x and y coordinates of the midpoint on the left side of the
 	# Rect.
-	def midtop; return self.centerx, self.at(1); end	
+	def midtop; return self.centerx, self.at(1); end
 
 	# Set the x and y coordinates of the midpoint on the top side of the Rect
 	# by translating the Rect (adjusting the x and y offsets).
@@ -333,7 +333,7 @@ class Rect < Array
 
 	# Return the x and y coordinates of the midpoint on the left side of the
 	# Rect.
-	def midright; return self.right, self.centery; end	
+	def midright; return self.right, self.centery; end
 
 	# Set the x and y coordinates of the midpoint on the right side of the Rect
 	# by translating the Rect (adjusting the x and y offsets).
@@ -348,7 +348,7 @@ class Rect < Array
 
 	# Return the x and y coordinates of the midpoint on the left side of the
 	# Rect.
-	def midbottom; return self.centerx, self.bottom; end	
+	def midbottom; return self.centerx, self.bottom; end
 
 	# Set the x and y coordinates of the midpoint on the bottom side of the
 	# Rect by translating the Rect (adjusting the x and y offsets).
@@ -361,7 +361,7 @@ class Rect < Array
 	alias mb midbottom
 	alias mb= midbottom=;
 
-   
+
    # returns rects for side collision
    def left_side
       Rect.new([ x, y, width * 0.25, height ])
@@ -388,7 +388,7 @@ class Rect < Array
 		self.dup.clamp!(rect)
 	end
 
-	# Translate the calling Rect to be entirely inside the given Rect. If 
+	# Translate the calling Rect to be entirely inside the given Rect. If
 	# the caller is too large along either axis to fit in the given rect,
 	# it is centered with respect to the given rect, along that axis.
 	def clamp!(rect)
@@ -438,7 +438,7 @@ class Rect < Array
 	# Crop the calling Rect to be entirely inside the given Rect. If the
 	# caller does not intersect the given Rect at all, its width and height
 	# are set to zero, but its x and y offsets are not changed.
-	# 
+	#
 	# As a side effect, the Rect is normalized.
 	def clip!(rect)
 		nself = self.normalize
@@ -459,7 +459,7 @@ class Rect < Array
 	# return the first pair whose value is a Rect that collides with the
 	# caller.
 	#
-	# Because a hash table is unordered, you should not expect any 
+	# Because a hash table is unordered, you should not expect any
 	# particular Rect to be returned first.
 	def collide_hash(hash_rects)
 		hash_rects.each { |key,value|
@@ -471,7 +471,7 @@ class Rect < Array
 	# Iterate through all key/value pairs in the given hash table, and
 	# return an Array of every pair whose value is a Rect that collides
 	# the caller.
-	# 
+	#
 	# Because a hash table is unordered, you should not expect the returned
 	# pairs to be in any particular order.
 	def collide_hash_all(hash_rects)
@@ -584,7 +584,7 @@ class Rect < Array
 		self.dup.union!(rect)
 	end
 
-	# Expand the caller to also cover the given Rect. The Rect is still a 
+	# Expand the caller to also cover the given Rect. The Rect is still a
 	# rectangle, so it may also cover areas that neither of the original
 	# Rects did, for example areas between the two Rects.
 	def union!(rect)

@@ -19,7 +19,7 @@
 #
 #++
 module Chingu
-  module GameStates  
+  module GameStates
     #
     # A game state for a client in a multiplayer game, suitable for smaller/middle sized games.
     # Used in combination with game state NetworkServer.
@@ -32,7 +32,7 @@ module Chingu
     #   send_msg(whatever ruby data)    # Will get marshalled and sent to server
     #   handle_incoming_data(max_size)  # Non-blocking read of incoming server data
     #   disconnect_from_server          # Shuts down all network connections
-    #   
+    #
     # The following callbacks can be overwritten to add your game logic:
     #   on_connect              # when the TCP connection to the server is opened
     #   on_disconnect           # when server dies or disconnects you
@@ -47,11 +47,11 @@ module Chingu
     #       super   # this is always needed!
     #       connect(options[:address], options[:port])
     #     end
-    #     
+    #
     #     def on_connect
     #       send_msg(:cmd => :hello)
     #     end
-    #     
+    #
     #     def on_msg(msg)
     #       if msg[:cmd] == :ping
     #         send_msg(:cmd => :pong, :timestamp => msg[:timestamp])   # send back timestamp so server can calcuate lag
@@ -72,19 +72,19 @@ module Chingu
       attr_reader :socket, :timeout
 
       def connected?; @connected; end
-      
+
       def initialize(options = {})
         super(options)
 
         @timeout = options[:timeout] || 4000
 
         @max_read_per_update = options[:max_read_per_update] || 50000
-        
+
         @socket = nil
         @connected = false
         @packet_buffer = PacketBuffer.new
       end
-      
+
       #
       # Default network loop:
       # 1) Try to complete outgoing connection if connect() has been called
@@ -116,12 +116,12 @@ module Chingu
             end
           end
         end
-        
+
         handle_incoming_data if @connected
 
         super
       end
-      
+
       #
       # Connect to a given address:port (the server)
       # Connect is done in a non-blocking manner.
@@ -132,21 +132,21 @@ module Chingu
           :port => @port,
           :reconnect => false, # Doesn't reset the timeout timer; used internally.
         }.merge! options
-        
+
         return if @socket
-        
+
         @address = options[:address]
         @port = options[:port]
-    
+
         # Set up our @socket, update() will handle the actual nonblocking connection
         @socket = Socket.new(Socket::Constants::AF_INET, Socket::Constants::SOCK_STREAM, 0)
         @sockaddr = Socket.sockaddr_in(@port, @address)
 
         @connect_times_out_at = Gosu::milliseconds + @timeout unless options[:reconnect]
-        
+
         return self
       end
-      
+
       #
       # Called when connect() fails with connection refused (closed port)
       #
@@ -161,14 +161,14 @@ module Chingu
       def on_timeout
         puts "[on_timeout() #{@address}:#{@port}]"  if @debug
       end
-      
+
       #
       # on_connect will be called when client successfully makes a connection to server
       #
       def on_connect
         puts "[Connected to Server #{@address}:#{@port}]"  if @debug
       end
-      
+
       #
       # on_disconnect will be called when server disconnects client for whatever reason
       #
@@ -182,17 +182,17 @@ module Chingu
       #
       def handle_incoming_data(amount = @max_read_per_update)
         return unless @socket and connected?
-        
+
         if IO.select([@socket], nil, nil, 0.0)
           begin
             packet, sender = @socket.recvfrom(amount)
-            on_data(packet)        
+            on_data(packet)
           rescue Errno::ECONNABORTED, Errno::ECONNRESET
             disconnect_from_server
           end
         end
       end
-  
+
       #
       # on_data(data) will be called from handle_incoming_data() by default.
       #
@@ -216,7 +216,7 @@ module Chingu
       def on_msg(packet)
         # should be overridden.
       end
-      
+
       #
       # Send a msg to the server
       #

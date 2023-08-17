@@ -33,13 +33,13 @@ module Chingu
   class ClassicGameObject < Chingu::BasicGameObject
     attr_accessor :image, :x, :y, :angle, :center_x, :center_y, :factor_x, :factor_y, :color, :mode, :zorder
     attr_reader :factor, :center, :height, :width
-    
+
     include Chingu::Helpers::InputClient        # Adds input and input=
     include Chingu::Helpers::RotationCenter     # Adds easy and verbose modification of @center_x and @center_y
-        
+
     def initialize(options = {})
       super
-      
+
       #
       # All encapsulated Gosu::Image.draw_rot arguments can be set with hash-options at creation time
       #
@@ -54,34 +54,34 @@ module Chingu
           @image = Gosu::Image[options[:image]]
         end
       end
-      
+
       @x = options[:x] || 0
       @y = options[:y] || 0
       @angle = options[:angle] || 0
-      
+
       self.factor = options[:factor] || options[:scale] || $window.factor || 1.0
       @factor_x = options[:factor_x].to_f if options[:factor_x]
       @factor_y = options[:factor_y].to_f if options[:factor_y]
-      
+
       self.center = options[:center] || 0.5
-      
+
       @rotation_center = options[:rotation_center]
       self.rotation_center(options[:rotation_center]) if options[:rotation_center]
-      
+
       @center_x = options[:center_x] if options[:center_x]
       @center_y = options[:center_y] if options[:center_y]
-      
+
       if options[:color].is_a?(Gosu::Color)
         @color = options[:color]
       else
         @color = Gosu::Color.new(options[:color] || 0xFFFFFFFF)
       end
-      
+
       self.alpha = options[:alpha]  if options[:alpha]
-      
+
       @mode = options[:mode] || :default # :additive is also available.
       @zorder = options[:zorder] || 100
-      
+
       if @image
         self.width = options[:width]   if options[:width]
         self.height = options[:height] if options[:height]
@@ -91,15 +91,15 @@ module Chingu
       # Call setup, this class holds an empty setup() to be overriden
       # setup() will be an easier method to override for init-stuff since you don't need to do super etc..
       setup
-      
+
     end
-    
+
     def to_s
       "#{self.class.to_s} @ #{x.to_i} / #{y.to_i} " <<
       "(#{width.to_i} x #{height.to_i}) - " <<
       " ratio: #{sprintf("%.2f",width/height)} scale: #{sprintf("%.2f", factor_x)}/#{sprintf("%.2f", factor_y)} angle: #{angle.to_i} zorder: #{zorder} alpha: #{alpha}"
     end
-    
+
     #
     # Get all settings from a game object in one array.
     # Complemented by the GameObject#attributes= setter.
@@ -125,7 +125,7 @@ module Chingu
     def width=(width)
       @factor_x = width.to_f / @image.width.to_f
     end
-    
+
     # Get effective on width by calculating it from image-width and factor
     def width
       (@image.width * @factor_x).abs
@@ -139,7 +139,7 @@ module Chingu
     def height=(height)
       @factor_y = height.to_f / @image.height.to_f
     end
-    
+
     # Get effective on heightby calculating it from image-width and factor
     def height
       (@image.height.to_f * @factor_y).abs
@@ -149,12 +149,12 @@ module Chingu
     def size=(size)
       self.width, self.height = *size
     end
-    
+
     # Get objects width and height in an array
     def size
       [self.width, self.height]
     end
-      
+
 
     # Quick way of setting both factor_x and factor_y
     def factor=(factor)
@@ -163,18 +163,18 @@ module Chingu
     end
     alias scale= factor=
     alias scale factor
-          
+
     # Quick way of setting both center_x and center_y
     def center=(center)
       @center = center
       @center_x = @center_y = center
     end
-    
+
     # Get objects alpha-value (internally stored in @color.alpha)
     def alpha
       @color.alpha
     end
-    
+
     # Set objects alpha-value (internally stored in @color.alpha)
     # If out of range, set to closest working value. this makes fading simpler.
     def alpha=(value)
@@ -202,7 +202,7 @@ module Chingu
       @visible = false
     end
     alias :hide :hide!
-    
+
     #
     # Enable automatic calling of draw and draw_trait each game loop
     #
@@ -210,13 +210,13 @@ module Chingu
       @visible = true
     end
     alias :show :show!
-    
+
     #
     # Returns true if visible (not hidden)
     #
     def visible?
       @visible == true
-    end    
+    end
 
 
     # Returns true if object is inside the game window, false if outside
@@ -224,11 +224,11 @@ module Chingu
       x >= 0 && x <= $window.width && y >= 0 && y <= $window.height
     end
 
-    # Returns true object is outside the game window 
+    # Returns true object is outside the game window
     def outside_window?(x = @x, y = @y)
       not inside_window?(x,y)
     end
-    
+
     # Calculates the distance from self to a given object
     def distance_to(object)
       distance(self.x, self.y, object.x, object.y)
@@ -249,7 +249,7 @@ module Chingu
     def draw
       @image.draw_rot(@x, @y, @zorder, @angle, @center_x, @center_y, @factor_x, @factor_y, @color, @mode) if @visible
     end
-    
+
     #
     # Works as #draw() but takes offsets for all draw_rot()-arguments. Used among others by the viewport-trait.
     #
@@ -263,5 +263,5 @@ module Chingu
     def draw_at(x, y)
       @image.draw_rot(x, y, @zorder, @angle, @center_x, @center_y, @factor_x, @factor_y, @color, @mode) if @visible
     end
-  end  
+  end
 end

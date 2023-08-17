@@ -23,7 +23,7 @@ require 'forwardable'
 
 module Chingu
   module Helpers
-  
+
     #
     # Convenience-methods for classes that have an FPS counter
     # Mixed into Chingu::Window and Chingu::Console
@@ -34,6 +34,6 @@ module Chingu
       def_delegators :@fps_counter, :fps, :framerate # TODO: switch to Gosu::fps
       def_delegators :@fps_counter, :dt, :milliseconds_since_last_tick
     end
-  
+
   end
 end

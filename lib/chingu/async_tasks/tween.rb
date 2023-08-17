@@ -21,26 +21,26 @@
 
 module Chingu
   module AsyncTasks
-    
+
     #
     # Basic tweening for numerical properties.
     #
     # 	game_object.async.tween 1000, :property => new_value
     #
     class Tween < Chingu::Async::BasicTask
-      
+
       # TODO Tweening is pretty dumb...make it smarter.
-      
+
       def initialize(duration, properties)
         super()
         @have_initial_values = false
         @age, @life = 0, duration
         @properties = properties
       end
-      
+
       def update(object)
         set_initial_values(object) unless have_initial_values?
-        
+
         @age += $window.milliseconds_since_last_tick
         t = @age.to_f / @life
         t = 1.0 if t > 1
@@ -48,13 +48,13 @@ module Chingu
           object.send "#{name}=", range.interpolate(t)
         end
       end
-      
+
       def finished?
         @age >= @life
       end
-      
+
       private
-      
+
       def set_initial_values(object)
         # TODO find a better and more general way to set up tweening.
         @properties.each do |name, value|
@@ -62,12 +62,12 @@ module Chingu
         end
         @have_initial_values = true
       end
-      
+
       def have_initial_values?
         !!@have_initial_values
       end
-      
+
     end
-    
+
   end
 end

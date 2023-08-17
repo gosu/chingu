@@ -30,10 +30,10 @@ module Chingu
   class SimpleMenu < BasicGameObject
     include Chingu::Helpers::InputClient
     attr_accessor :menu_items, :visible
-    
+
     def initialize(options = {})
       super
-      
+
       # @font_size = options.delete(:font_size) || 30
       @menu_items = options.delete(:menu_items)
       @x = options.delete(:x) || $window.width/2
@@ -41,7 +41,7 @@ module Chingu
       @spacing = options.delete(:spacing) || 100
       @items = []
       @visible = true
-  
+
       y = @y
       menu_items.each do |key, value|
         item = if key.is_a? String
@@ -52,23 +52,23 @@ module Chingu
           key.options.merge!(options.dup)
           key
         end
-        
+
         item.options[:on_select] = method(:on_select)
         item.options[:on_deselect] = method(:on_deselect)
         item.options[:action] = value
-        
+
         item.rotation_center = :center_top
         item.x = @x
         item.y = y
         y += item.height + @spacing
         @items << item
-      end      
+      end
       @selected = options[:selected] || 0
       step(0)
-      
+
       self.input = {:up => lambda{step(-1)}, :down => lambda{step(1)}, [:return, :space] => :select}
     end
-    
+
     #
     # Moves selection within the menu. Can be called with negative or positive values. -1 and 1 makes most sense.
     #
@@ -79,31 +79,31 @@ module Chingu
       @selected = 0               if @selected == @items.count
       selected.options[:on_select].call(selected)
     end
-    
+
     def select
       dispatch_action(selected.options[:action], self.parent)
     end
-            
+
     def selected
       @items[@selected]
     end
-      
+
     def on_deselect(object)
       object.color = ::Gosu::Color::WHITE
     end
-    
+
     def on_select(object)
       object.color = ::Gosu::Color::RED
     end
-    
+
     def draw
       @items.each { |item| item.draw }
     end
-    
+
     private
-    
+
     #
-    # TODO - DRY this up with input dispatcher somehow 
+    # TODO - DRY this up with input dispatcher somehow
     #
     def dispatch_action(action, object)
       case action
@@ -120,7 +120,6 @@ module Chingu
       else
         # TODO possibly raise an error? This ought to be handled when the input is specified in the first place.
       end
-    end    
+    end
   end
 end
- 

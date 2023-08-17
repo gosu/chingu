@@ -43,10 +43,10 @@ module Chingu
       super(options)
       @repeat_x = options[:repeat_x] || true
       @repeat_y = options[:repeat_y] || false
-      
+
       @layers = Array.new
     end
-    
+
     #
     # Add one layer, either an ParallaxLayer-object or a Hash of options to create one
     # You can also add new layers with the shortcut "<<":
@@ -57,7 +57,7 @@ module Chingu
     end
     alias << add_layer
 
-    
+
     #
     # returns true if any part of the parallax-scroller is inside the window
     #
@@ -73,7 +73,7 @@ module Chingu
     def outside_window?
       not inside_window?
     end
-    
+
     #
     # Parallax#camera_x= works in inverse to Parallax#x (moving the "camera", not the image)
     #
@@ -101,7 +101,7 @@ module Chingu
     def camera_y
       -@y
     end
-    
+
     #
     # TODO: make use of $window.milliseconds_since_last_update here!
     #
@@ -109,22 +109,22 @@ module Chingu
       @layers.each do |layer|
         layer.x = @x / layer.damping
         layer.y = @y / layer.damping
-        
+
         # This is the magic that repeats the layer to the left and right
         layer.x -= layer.image.width  while (layer.repeat_x && layer.x > 0)
-       
+
         # This is the magic that repeats the layer to the left and right
         layer.y -= layer.image.height while (layer.repeat_y && layer.y > 0)
       end
     end
-    
+
     #
-    # Draw 
+    # Draw
     #
     def draw
       @layers.each do |layer|
         save_x, save_y = layer.x, layer.y
-        
+
         # If layer lands inside our window and repeat_x is true (defaults to true), draw it until window ends
         while layer.repeat_x && layer.x < $window.width
           while layer.repeat_y && layer.y < $window.height
@@ -132,11 +132,11 @@ module Chingu
             layer.y += layer.image.height
           end
           layer.y = save_y
-          
+
           layer.draw
           layer.x += layer.image.width
         end
-        
+
         # Special loop for when repeat_y is true but not repeat_x
         if layer.repeat_y && !layer.repeat_x
           while layer.repeat_y && layer.y < $window.height
@@ -150,7 +150,7 @@ module Chingu
       self
     end
   end
-  
+
   #
   # ParallaxLayer is mainly used by class Parallax to keep track of the different layers.
   # If you @parallax << { :image => "foo.png" } a ParallaxLayer will be created automaticly from that Hash.
@@ -158,36 +158,36 @@ module Chingu
   # If no zorder is provided the ParallaxLayer-class increments an internal zorder number which will
   # put the last layer added on top of the rest.
   #
-  class ParallaxLayer < Chingu::GameObject    
+  class ParallaxLayer < Chingu::GameObject
     attr_reader :damping
     attr_accessor :repeat_x, :repeat_y
-    
-    def initialize(options)      
-      @parallax = options[:parallax]      
+
+    def initialize(options)
+      @parallax = options[:parallax]
       # No auto update/draw, the parentclass Parallax takes care of that!
       options.merge!(:visible => false, :paused => true)
-    
+
       options = {:rotation_center => @parallax.options[:rotation_center]}.merge(options)  if @parallax
-      
+
       #
       # Default arguments for repeat_x and repeat_y
-      # If no zorder is given, use a global incrementing counter. 
+      # If no zorder is given, use a global incrementing counter.
       # First added, furthest behind when drawn.
       #
       options = {
-          :repeat_x => true, 
-          :repeat_y => false, 
+          :repeat_x => true,
+          :repeat_y => false,
           :zorder   => @parallax ? (@parallax.zorder + @parallax.layers.count) : 100
       }.merge(options)
-            
+
       @repeat_x = options[:repeat_x]
       @repeat_y = options[:repeat_y]
-            
+
       super(options)
-      
+
       @damping = options[:damping] || 1
     end
-        
+
     #
     # Gets pixel from layers image
     # The pixel is from the window point of view, so coordinates are converted:
@@ -198,12 +198,12 @@ module Chingu
     def get_pixel(x, y)
       image_x = x - @x
       image_y = y - @y
-      
+
       # On a 100 x 100 image, get_pixel works to 99 x 99
-      image_x -= @image.width   while image_x >= @image.width 
-      
+      image_x -= @image.width   while image_x >= @image.width
+
       @image.get_pixel(image_x, image_y)
     end
-    
+
   end
 end

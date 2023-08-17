@@ -38,27 +38,27 @@ module Chingu
     include Chingu::Helpers::GameObject         # Adds game_objects_of_class etc ...
     include Chingu::Helpers::InputDispatcher    # Input dispatch-helpers
     include Chingu::Helpers::InputClient        # Window has its own inputmap
-    
+
     attr_reader :root, :game_state_manager, :game_objects, :milliseconds_since_last_tick
     attr_accessor :factor, :cursor
-    
+
     def initialize(width = 800, height = 600, fullscreen = false, update_interval = 16.666666)
       raise "Cannot create a new #{self.class} before the old one has been closed" if $window
 
       fullscreen ||= ARGV.include?("--fullscreen")
       $window = super(width, height, fullscreen, update_interval)
-			
+
       @root = File.dirname(File.expand_path($0))
-      
+
       Chingu::Asset.autoload_dirs += [".", File.join(@root, "assets"), File.join(@root, "media")]
       Gosu::Image.autoload_dirs   += [".", File.join(@root, "images"), File.join(@root, "gfx"), File.join(@root, "media")]
       Gosu::Sample.autoload_dirs  += [".", File.join(@root, "sounds"), File.join(@root, "sfx"), File.join(@root, "media")]
       Gosu::Song.autoload_dirs    += [".", File.join(@root, "songs"), File.join(@root, "sounds"), File.join(@root, "sfx"), File.join(@root, "media")]
       Gosu::Font.autoload_dirs    += [".", File.join(@root, "fonts"), File.join(@root, "media")]
-      			
+
       @game_objects = GameObjectList.new
       @input_clients = Array.new
-      
+
       @fps_counter = FPSCounter.new
       @game_state_manager = GameStateManager.new
       @milliseconds_since_last_tick = 0
@@ -66,10 +66,10 @@ module Chingu
       @cursor = false
       @times_muted = 0
       @volume = DEFAULT_VOLUME
-      
+
       setup
     end
-    
+
     #
     # If this returns true, GOSU will show a cursor
     # Chingu solves this with the $window.cursor = [true|false] accessor
@@ -77,17 +77,17 @@ module Chingu
     def needs_cursor?
       @cursor
     end
-    
+
     # Placeholder to be overwritten
     def setup; end;
-    
+
     #
     # Make all old and future images use hard borders. Hard borders + scaling = retro feel!
     #
     def retrofy
       Gosu::enable_undocumented_retrofication
     end
-    
+
     #
     # Returns self inside GameState.initialize (a game state is not 'active' inside initialize())
     # Or returns current active game state (as in a switched to or pushed game state)
@@ -98,22 +98,22 @@ module Chingu
     def current_scope
       game_state_manager.inside_state || game_state_manager.current_game_state || self
     end
-    
+
     #
     # Chingus core-logic / loop. Gosu will call this each game-iteration.
     #
     def update
       #
-      # Register a tick with our rather standard tick/framerate counter. 
+      # Register a tick with our rather standard tick/framerate counter.
       # Returns the amount of milliseconds since last tick. This number is used in all update()-calls.
       # Without this self.fps would return an incorrect value.
       # If you override this in your Chingu::Window class, make sure to call super.
       #
       @milliseconds_since_last_tick = @fps_counter.register_tick
-      
+
       intermediate_update
     end
-    
+
     #
     # "game logic" update that is safe to call even between Gosus update-calls
     #
@@ -122,18 +122,18 @@ module Chingu
       # Dispatch inputmap for main window
       #
       dispatch_input_for(self)
-      
+
       #
       # Dispatch input for all input-clients handled by to main window (game objects with input created in main win)
       #
       @input_clients.each { |game_object| dispatch_input_for(game_object) unless game_object.paused? }
-      
-      
+
+
       #
       # Call update() on all game objects belonging to the main window.
       #
       @game_objects.update
-      
+
       #
       # Call update() on all game objects belonging to the current game state.
       #
@@ -145,24 +145,24 @@ module Chingu
       #
       @game_state_manager.update
     end
-    
-    # 
+
+    #
     # Chingus main screen manupulation method.
     # If you override this in your Chingu::Window class, make sure to call super.
     # Gosu will call this each game-iteration just after #update
     #
     def draw
       #
-      # Draw all game objects associated with the main window.      
+      # Draw all game objects associated with the main window.
       #
       @game_objects.draw
-      
+
       #
       # Let the game state manager call draw on the active game state (if any)
       #
       @game_state_manager.draw
     end
-    
+
     #
     # By default button_up sends the keyevent to the GameStateManager
     # .. Which then is responsible to send it to the right GameState(s)
@@ -172,7 +172,7 @@ module Chingu
       @input_clients.each { |object| dispatch_button_up(id, object) unless object.paused? }
       @game_state_manager.button_up(id)
     end
-    
+
     #
     # By default button_down sends the keyevent to the GameStateManager
     # .. Which then is responsible to send it to the right GameState(s)
@@ -182,7 +182,7 @@ module Chingu
       @input_clients.each { |object| dispatch_button_down(id, object) unless object.paused? }
       @game_state_manager.button_down(id)
     end
-	
+
     #
     # Close the window when it is no longer required. Ensure this is done before a new window is initialized.
     #
@@ -196,9 +196,9 @@ module Chingu
 
       $window = nil
     end
-    
+
     # GLOBAL SOUND SETTINGS
-    
+
     DEFAULT_VOLUME = 1.0 # However, 0.5 is a better value for general use.
 
     # Set the global volume of all Samples and Songs, not affected by Window being muted.
@@ -247,6 +247,6 @@ module Chingu
     # Is the window currently muted?
     def muted?
       @times_muted > 0
-    end   
+    end
   end
 end

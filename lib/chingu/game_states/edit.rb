@@ -21,7 +21,7 @@
 
 module Chingu
   module GameStates
-  
+
     #
     # Premade game state for chingu - simple level editing.
     # Start editing in a gamestate with:
@@ -49,15 +49,15 @@ module Chingu
 
       def initialize(options = {})
         super
-                
+
         options = {:draw_grid => true, :snap_to_grid => true, :resize_to_grid => true}.merge(options)
-        
+
         @grid = options[:grid] || [8,8]
         @grid_color = options[:grid_color] || Gosu::Color.new(0xaa222222)
         @draw_grid = options[:draw_grid]
         @snap_to_grid = options[:snap_to_grid]      # todo
         @resize_to_grid = options[:resize_to_grid]  # todo
-        
+
         @classes = Array(options[:classes] || game_object_classes)
         @except = options[:except] || []
         @classes -= Array(@except)
@@ -69,7 +69,7 @@ module Chingu
         #
         @original_cursor = $window.cursor
         $window.cursor = true
-        
+
         p @classes  if @debug
 
         @hud_color = Gosu::Color.new(200,70,70,70)
@@ -166,13 +166,13 @@ module Chingu
           rescue
             puts "Couldn't use #{klass} in editor: #{$!}"
           end
-        end        
+        end
       end
       def display_help
 text = <<END_OF_STRING
   F1: This help screen
   ESC: Return to Edit
-  
+
   1-5: create object 1..5 shown in toolbar at mousecursor
   CTRL+A: select all objects (not in-code-created ones though)
   CTRL+S: Save
@@ -182,7 +182,7 @@ text = <<END_OF_STRING
   Right Mouse Button Click: Copy object bellow cursor for fast duplication
   Arrow-keys (with selected objects): Move objects 1 pixel at the time
   Arrow-keys (with no selected objects): Scroll within a viewport
-  
+
 
   Bellow keys operates on all currently selected game objects
   -----------------------------------------------------------------------------------
@@ -190,7 +190,7 @@ text = <<END_OF_STRING
   BACKSPACE: reset angle and scale to default values
   Page Up: Increase zorder
   Page Down: Decrease zorder
-  
+
   R: scale up
   F: scale down
   T: tilt left
@@ -206,13 +206,13 @@ text = <<END_OF_STRING
   CTRL + Mouse Wheel: Zorder up/down
   ALT + Mouse Wheel: Transparency less/more
 END_OF_STRING
-        
+
         push_game_state( GameStates::Popup.new(:text => text) )
       end
-      
+
       def draw_grid
         return unless @grid
-        
+
         start_x, start_y = 0,0
         if defined?(previous_game_state.viewport)
           start_x = -previous_game_state.viewport.x % @grid.first
@@ -224,7 +224,7 @@ END_OF_STRING
         (start_y .. $window.height).step(@grid.last).each do |y|
           $window.draw_line(1, y, @grid_color, $window.width, y, @grid_color, 0, :additive)
         end
-        
+
       end
 
       #
@@ -237,32 +237,32 @@ END_OF_STRING
         @title.text += " - Grid: #{@grid}" if @grid
         @text = Text.create("", :x => 300, :y => 20, :factor => 1, :size => 16)
         @status_text = Text.create("-", :x => 5, :y => 20, :factor => 1, :size => 16)
-        
+
         if defined?(previous_game_state.viewport)
           @game_area_backup = previous_game_state.viewport.game_area.dup
           previous_game_state.viewport.game_area.x -= @hud_height
           previous_game_state.viewport.game_area.y -= @hud_height
         end
       end
-                  
+
       #
       # UPDATE
       #
-      def update        
+      def update
         super
-        
+
         @status_text.text = "#{self.mouse_x.to_i} / #{self.mouse_y.to_i}"
-    
+
         @text.text = @selected_game_object.to_s
-        
+
         #
         # We got a selected game object and the left mouse button is held down
         #
         if @left_mouse_button && @selected_game_object
-          selected_game_objects.each do |selected_game_object|            
+          selected_game_objects.each do |selected_game_object|
             selected_game_object.x = self.mouse_x + selected_game_object.options[:mouse_x_offset]
             selected_game_object.y = self.mouse_y + selected_game_object.options[:mouse_y_offset]
-            
+
             if @snap_to_grid
               selected_game_object.x -= selected_game_object.x % @grid[0]
               selected_game_object.y -= selected_game_object.y % @grid[1]
@@ -274,7 +274,7 @@ END_OF_STRING
             self.previous_game_state.viewport.y = @left_mouse_click_at[1] - $window.mouse_y
           end
         end
-        
+
         if inside_window?($window.mouse_x, $window.mouse_y)
           scroll_right  if $window.mouse_x > $window.width - @scroll_border_thickness
           scroll_left   if $window.mouse_x < @scroll_border_thickness
@@ -282,75 +282,75 @@ END_OF_STRING
           scroll_down   if $window.mouse_y > $window.height - @scroll_border_thickness
         end
       end
-      
+
       #
       # DRAW
       #
       def draw
         # Draw prev game state onto screen (the level we're editing)
         previous_game_state.draw
-        
+
         # Restart z-ordering, everything after this will be drawn on top
         $window.flush
-                
+
         draw_grid if @draw_grid
-        
+
         #
         # Draw an edit HUD
         #
         $window.draw_quad(  0,0,@hud_color, $window.width,0,@hud_color,
                             $window.width,@hud_height,@hud_color,0,@hud_height,@hud_color)
-             
+
         #
         # Draw gameobjects
         #
         super
-                
+
         #
         # Draw red rectangles/circles around all selected game objects
-        #        
+        #
         if defined?(previous_game_state.viewport)
           previous_game_state.viewport.apply { draw_selections }
         else
           draw_selections
         end
-        
+
         @cursor_game_object.draw_at($window.mouse_x, $window.mouse_y)   if @cursor_game_object
       end
-      
+
       #
       # Draw a red rectangle around all selected objects
       #
       def draw_selections
         selected_game_objects.each { |game_object| draw_rect(bounding_box(game_object), Color::RED, 10000) }
       end
-      
+
       #
       # CLICKED LEFT MOUSE BUTTON
       #
       def left_mouse_button
         @left_mouse_button  = true
         @selected_game_object = false
-        
+
         if defined?(self.previous_game_state.viewport)
           @left_mouse_click_at = [self.previous_game_state.viewport.x + $window.mouse_x, self.previous_game_state.viewport.y + $window.mouse_y]
         else
           @left_mouse_click_at = [$window.mouse_x, $window.mouse_y]
         end
-        
+
         # Put out a new game object in the editor window and select it right away
         @selected_game_object = copy_game_object(@cursor_game_object)  if @cursor_game_object
-        
+
         # Check if user clicked on anything in the icon-toolbar of available game objects
         @cursor_game_object = game_object_icon_at($window.mouse_x, $window.mouse_y)
 
         # Get editable game object that was clicked at (if any)
         @selected_game_object ||= game_object_at(self.mouse_x, self.mouse_y)
-        
+
         if @selected_game_object && defined?(self.previous_game_state.viewport)
           self.previous_game_state.viewport.center_around(@selected_game_object)  if @left_double_click
         end
-                      
+
         if @selected_game_object
           #
           # If clicking on a new object that's wasn't previosly selected
@@ -359,19 +359,19 @@ END_OF_STRING
           if @selected_game_object.options[:selected] == nil
             selected_game_objects.each { |object| object.options[:selected] = nil } unless holding?(:left_ctrl)
           end
-          
+
           if holding?(:left_ctrl)
             @selected_game_object.options[:selected] = !@selected_game_object.options[:selected]
           else
             @selected_game_object.options[:selected] = true
           end
-          
+
           if holding?(:left_shift)
             previous_game_state.game_objects.select { |x| x.class == @selected_game_object.class }.each do |game_object|
               game_object.options[:selected] = true
             end
           end
-            
+
           #
           # Re-align all objects x/y offset in relevance to the cursor
           #
@@ -383,13 +383,13 @@ END_OF_STRING
           deselect_selected_game_objects unless holding?(:left_ctrl)
         end
       end
-      
+
       def right_mouse_button
         @cursor_game_object = @cursor_game_object ?  nil : game_object_at(mouse_x, mouse_y)
       end
       def released_right_mouse_button
       end
-            
+
       #
       # RELASED LEFT MOUSE BUTTON
       #
@@ -408,14 +408,14 @@ END_OF_STRING
       def editable_game_objects
         previous_game_state.game_objects.select { |o| o.options[:created_with_editor] }
       end
-      
+
       #
       # Returns a list of selected game objects
       #
       def selected_game_objects
         editable_game_objects.select { |o| o.options[:selected] }
       end
-      
+
       #
       # Call destroy on all selected game objects
       #
@@ -426,9 +426,9 @@ END_OF_STRING
       def deselect_selected_game_objects
         selected_game_objects.each { |object| object.options[:selected] = nil }
       end
-      
+
       def empty_area_at_cursor
-        game_object_at(self.mouse_x, self.mouse_y)==nil && 
+        game_object_at(self.mouse_x, self.mouse_y)==nil &&
         game_object_icon_at($window.mouse_x, $window.mouse_y) == nil
       end
 
@@ -439,15 +439,15 @@ END_OF_STRING
         ObjectSpace.enum_for(:each_object, class << GameObject; self; end).to_a.select do |game_class|
           game_class.instance_methods && !game_class.to_s.include?("Chingu::")
         end
-      end      
-      
+      end
+
       def create_object_nr(number)
         c = @classes[number].create(:x => self.mouse_x, :y => self.mouse_y, :parent => previous_game_state)  if @classes[number]
         c.options[:created_with_editor] = true
         c.update
         #@text.text = "Created a #{c.class} @ #{c.x} / #{c.y}"
       end
-      
+
       def create_object_1; create_object_nr(0); end
       def create_object_2; create_object_nr(1); end
       def create_object_3; create_object_nr(2); end
@@ -492,7 +492,7 @@ END_OF_STRING
       def quit
         pop_game_state
       end
-      def save 
+      def save
         save_game_objects(:game_objects => editable_game_objects, :file => @file, :classes => @classes, :attributes => @attributes)
       end
       def save_and_quit
@@ -506,7 +506,7 @@ END_OF_STRING
         end
         $window.cursor = @original_cursor
       end
-            
+
       def move_left
         scroll_left && return   if selected_game_objects.empty?
         selected_game_objects.each { |game_object| game_object.x -= 1 }
@@ -523,7 +523,7 @@ END_OF_STRING
         scroll_down && return   if selected_game_objects.empty?
         selected_game_objects.each { |game_object| game_object.y += 1 }
       end
-      
+
       def try_scroll_left
         scroll_left if selected_game_objects.empty?
       end
@@ -536,7 +536,7 @@ END_OF_STRING
       def try_scroll_down
         scroll_down if selected_game_objects.empty?
       end
-      
+
       def mouse_wheel_up
         if selected_game_objects.empty?
           scroll_up(40)
@@ -558,12 +558,12 @@ END_OF_STRING
           scale_down
         end
       end
-      
+
       def tilt_left
         selected_game_objects.each { |game_object| game_object.angle -= 5 }
       end
       def tilt_right
-        selected_game_objects.each { |game_object| game_object.angle += 5 }        
+        selected_game_objects.each { |game_object| game_object.angle += 5 }
       end
       def scale_up
         scale_up_x && scale_up_y
@@ -571,7 +571,7 @@ END_OF_STRING
       def scale_down
         scale_down_x && scale_down_y
       end
-      
+
       def inc_zorder
         selected_game_objects.each { |game_object| game_object.zorder += 1 }
       end
@@ -596,7 +596,7 @@ END_OF_STRING
       def scale_down_y
         selected_game_objects.each { |game_object| game_object.height -= grid[1] if game_object.height > grid[1] }
       end
-            
+
       def esc
         deselect_selected_game_objects
         @cursor_game_object = nil
@@ -619,13 +619,13 @@ END_OF_STRING
       def scroll_right(amount = 10)
         self.previous_game_state.viewport.x += amount if defined?(self.previous_game_state.viewport)
       end
-      
+
       def mouse_x
         x = $window.mouse_x
         x += self.previous_game_state.viewport.x if defined?(self.previous_game_state.viewport)
         return x
       end
-      
+
       def mouse_y
         y = $window.mouse_y
         y += self.previous_game_state.viewport.y if defined?(self.previous_game_state.viewport)
@@ -640,22 +640,22 @@ END_OF_STRING
         game_object = template.class.create(:parent => previous_game_state)
         # If we don't create it from the toolbar, we're cloning another object
         # When cloning we wan't the cloned objects attributes
-        game_object.attributes = template.attributes  unless template.options[:toolbar]       
+        game_object.attributes = template.attributes  unless template.options[:toolbar]
         game_object.x = self.mouse_x
         game_object.y = self.mouse_y
         game_object.options[:created_with_editor] = true
-                
+
         game_object.options[:mouse_x_offset] = (game_object.x - self.mouse_x) rescue 0
         game_object.options[:mouse_y_offset] = (game_object.y - self.mouse_y) rescue 0
-        
+
         return game_object
       end
-      
+
       CENTER_TO_FACTOR = { 0 => -1, 0.5 => 0, 1 => 1 }
       #
       # Returns a bounding box (Rect-class) for any gameobject
       # It will take into considerations rotation_center and scaling
-      #      
+      #
       def bounding_box(game_object)
         width, height = game_object.width, game_object.height
         x = game_object.x - width * game_object.center_x
@@ -665,10 +665,10 @@ END_OF_STRING
         return Rect.new(x, y, width, height)
       end
       alias :bb :bounding_box
-        
-      
+
+
       #
-      # If we're editing a game state with automaticly called special methods, 
+      # If we're editing a game state with automaticly called special methods,
       # the following takes care of those.
       #
       def method_missing(symbol, *args)
@@ -676,7 +676,7 @@ END_OF_STRING
           previous_game_state.__send__(symbol, *args)
         end
       end
-      
+
     end
   end
 end

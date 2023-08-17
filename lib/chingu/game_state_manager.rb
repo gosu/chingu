@@ -43,14 +43,14 @@ module Chingu
   #
   class GameStateManager
     attr_accessor :inside_state
-    
+
     def initialize
       @inside_state = nil
       @game_states = []
       @transitional_game_state = nil
       @transitional_game_state_options = {}
     end
-    
+
     #
     # Gets the currently active gamestate (top of stack)
     #
@@ -65,14 +65,14 @@ module Chingu
     def game_states
       @game_states.reverse
     end
-    
+
     #
-    # Sets a game state to be called between the old and the new game state 
+    # Sets a game state to be called between the old and the new game state
     # whenever a game state is switched,pushed or popped.
     #
     # The transitional game state is responsible for switching to the "new game state".
     # It should do so with ":transitional => false" not to create an infinite loop.
-    # 
+    #
     # The new game state is the first argument to the transitional game states initialize().
     #
     # Example:
@@ -80,7 +80,7 @@ module Chingu
     #   push_game_state(Level2)
     #
     # would in practice become:
-    # 
+    #
     #   push_game_state(FadeIn.new(Level2))
     #
     # This would be the case for every game state change until the transitional game state is removed:
@@ -92,46 +92,46 @@ module Chingu
       @transitional_game_state = game_state
       @transitional_game_state_options = options
     end
-    
+
     #
     # Switch to a given game state, _replacing_ the current active one.
     # By default setup() is called on the game state  we're switching _to_.
     # .. and finalize() is called on the game state we're switching _from_.
-    #   
+    #
     def switch_game_state(state, options = {})
       options = {:setup => true, :finalize => true, :transitional => true}.merge!(options)
-      
+
       # Don't setup or finalize the underlying state, since it never becomes active.
       pop_game_state(options.merge(:setup => false))
       push_game_state(state, options.merge(:finalize => false))
     end
     alias :switch :switch_game_state
-    
+
     #
     # Adds a state to the game state-stack and activates it.
-    # By default setup() is called on the new game state 
+    # By default setup() is called on the new game state
     # .. and finalize() is called on the game state we're leaving.
     #
     def push_game_state(state, options = {})
       options = {:setup => true, :finalize => true, :transitional => true}.merge(options)
-      
+
       new_state = game_state_instance(state)
-            
+
       if new_state
-        
+
         # So BasicGameObject#create connects object to new state in its setup()
         self.inside_state = new_state
-        
+
         # Make sure the game state knows about the manager
         # Is this doubled in GameState.initialize() ?
         new_state.game_state_manager = self
-        
+
         # Call setup
         new_state.setup               if new_state.respond_to?(:setup) && options[:setup]
-                
+
         # Give the soon-to-be-disabled state a chance to clean up by calling finalize() on it.
         current_game_state.finalize   if current_game_state.respond_to?(:finalize) && options[:finalize]
-        
+
         if @transitional_game_state && options[:transitional]
           # If we have a transitional, push that instead, with new_state as first argument
           transitional_game_state = @transitional_game_state.new(new_state, @transitional_game_state_options)
@@ -143,11 +143,11 @@ module Chingu
         end
         ## MOVED: self.inside_state = current_game_state
       end
-      
+
       self.inside_state = nil   # no longer 'inside' (as in within initialize() etc) a game state
     end
     alias :push :push_game_state
-    
+
     #
     # Pops a state off the game state-stack, activating the previous one.
     # By default setup() is called on the game state that becomes active.
@@ -155,7 +155,7 @@ module Chingu
     #
     def pop_game_state(options = {})
       options = {:setup => true, :finalize => true, :transitional => true}.merge(options)
-      
+
       #
       # Give the soon-to-be-disabled state a chance to clean up by calling finalize() on it.
       #
@@ -165,21 +165,21 @@ module Chingu
       # Activate the game state "bellow" current one with a simple Array.pop
       #
       @game_states.pop
-      
+
       # So BasicGameObject#create connects object to new state in its setup()
       # Is this doubled in GameState.initialize() ?
       self.inside_state = current_game_state
-      
+
       # Call setup on the new current state
       current_game_state.setup       if current_game_state.respond_to?(:setup) && options[:setup]
-      
+
       if @transitional_game_state && options[:transitional]
         # If we have a transitional, push that instead, with new_state as first argument
         transitional_game_state = @transitional_game_state.new(current_game_state, @transitional_game_state_options)
         transitional_game_state.game_state_manager = self
         self.push_game_state(transitional_game_state, :transitional => false)
       end
-      
+
       ## MOVED: self.inside_state = current_game_state
       self.inside_state = nil   # no longer 'inside' (as in within initialize() etc) a game state
     end
@@ -192,7 +192,7 @@ module Chingu
       current_game_state.previous_game_state
     end
     alias :previous previous_game_state
-    
+
     #
     # Remove all game states from stack. Shortcut: "clear"
     #
@@ -201,10 +201,10 @@ module Chingu
       self.inside_state = nil
     end
     alias :clear :clear_game_states
-    
+
     #
     # Pops through all game states until matching a given game state (takes either a class or instance to match).
-    #    
+    #
     def pop_until_game_state(new_state, options = {})
       if new_state.is_a? Class
         raise ArgumentError, "No state of given class is on the stack" unless @game_states.any? {|s| s.is_a? new_state }
@@ -217,7 +217,7 @@ module Chingu
         pop_game_state(options) until current_game_state == new_state
       end
     end
-        
+
     #
     # This method should be called from button_down(id) inside your main loop.
     # Enables the game state manager to call button_down(id) on active game state.
@@ -227,7 +227,7 @@ module Chingu
     def button_down(id)
       current_game_state.button_down(id) if current_game_state
     end
-    
+
     #
     # This method should be called from button_up(id) inside your main loop.
     # Enables the game state manager to call button_up(id) on active game state.
@@ -237,7 +237,7 @@ module Chingu
     def button_up(id)
       current_game_state.button_up(id)  if current_game_state
     end
-    
+
     #
     # This method should be called from update() inside your main loop.
     # Enables the game state manager to call update() on active game state.
@@ -262,9 +262,9 @@ module Chingu
         current_game_state.draw
       end
     end
-    
+
     private
-    
+
     #
     # Returns a GameState-instance from either a GameState class or GameState-object
     #
@@ -275,9 +275,9 @@ module Chingu
       # If state is a GameState-class, instance it.
       #
       new_state = state.new if state.is_a? Class
-      
+
       return new_state  # if new_state.kind_of? Chingu::GameState # useless check.
     end
-    
+
   end
 end

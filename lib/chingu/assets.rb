@@ -5,20 +5,20 @@
 #
 module Chingu
   def media_path(file)
-    File.join(ROOT, "media", file)  
+    File.join(ROOT, "media", file)
   end
 
   def root_path(file)
-    File.join(ROOT, file)  
+    File.join(ROOT, file)
   end
 
   def image_path(file)
     File.join(ROOT, "images", file)
   end
-  
+
   class Asset
     include Chingu::NamedResource
-		
+
     def self.autoload(name)
       find_file(name)
     end
@@ -31,7 +31,7 @@ end
 module Gosu
   class Image
     include Chingu::NamedResource
-    
+
     def self.autoload(name)
       ret = (path = find_file(name)) ? Gosu::Image.new($window, path, false) : nil
       raise "Can't load image \"#{name}\"" if ret.nil?
@@ -99,15 +99,15 @@ module Gosu
 
   class Song
     include Chingu::NamedResource
-		
+
     def self.autoload(name)
       (path = find_file(name)) ? Gosu::Song.new(path) : nil
     end
   end
-  
+
   class Sample
     include Chingu::NamedResource
-    
+
     def self.autoload(name)
       (path = find_file(name)) ? Gosu::Sample.new(path) : nil
     end

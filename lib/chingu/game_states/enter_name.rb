@@ -19,18 +19,18 @@
 #
 #++
 
-module Chingu  
+module Chingu
   module GameStates
     #
     # A Chingu::GameState for showing a classic arcade "enter name" screen.
     # Will let the user enter his alias or name with the keyboard or game_pad
     # Intended to be minimalistic. If you wan't something flashy you probably want to do this class yourself.
-    #  
+    #
     class EnterName < Chingu::GameState
-  
+
       def initialize(options = {})
         super
-        
+
         #@title = options[:title] || "<u>Please enter your name</u>"
         #Text.create(@title, :rotation_center => :top_center, :x => $window.width/2, :y => 10, :size => 40)
 
@@ -40,10 +40,10 @@ module Chingu
         on_input([:holding_right, :holding_d, :holding_gamepad_right], :right)
         on_input([:space, :x, :enter, :gamepad_button_1, :return], :action)
         on_input(:esc, :pop_game_state)
-        
+
         @callback = options[:callback]
         @columns = options[:columns] || 14
-        
+
         @string = []
         @texts = []
         @index = 0
@@ -52,30 +52,30 @@ module Chingu
 
         @y = 140
         @x = ($window.width - 600)/2
-        
+
         @letters.each_with_index do |letter, index|
           @texts << Text.create(letter, :x => @x, :y => @y, :size => @letter_size)
           @x += @texts.last.width + 20
-          
+
           if (index+1) % @columns == 0
             @y += @letter_size
             @x = @texts.first.x
           end
         end
-      
+
         @texts[@index].color = ::Gosu::Color::RED
         @name = Text.create("", :rotaion_center => :top_center, :x => $window.width/2, :y => 60, :size => 80)
       end
-    
+
       # Move cursor 1 step to the left
       def left; move_cursor(-1); end
-      
+
       # Move cursor 1 step to the right
       def right; move_cursor(1); end
 
       # Move cursor 1 step to the left
       def up; move_cursor(-@columns); end
-      
+
       # Move cursor 1 step to the right
       def down; move_cursor(@columns); end
 
@@ -87,19 +87,19 @@ module Chingu
         #@index += amount
         #@index = 0                if @index >= @letters.size
         #@index = @letters.size-1  if @index < 0
-        
+
         #
         # Cursor won't wrap
         #
         new_value = @index + amount
         @index = new_value  if new_value < @letters.size && new_value >= 0
-        
+
         @texts.each { |text| text.color = ::Gosu::Color::WHITE }
         @texts[@index].color = ::Gosu::Color::RED
-        
+
         sleep(0.15)
       end
-  
+
       def action
         case @letters[@index]
           when "DEL"      then  @string.pop
@@ -107,16 +107,16 @@ module Chingu
           when "ENTER"    then  go
           else            @string << @letters[@index]
         end
-        
+
         @name.text = @string.join
         @name.x = $window.width/2 - @name.width/2
       end
-      
+
       def go
         @callback.call(@name.text)
         pop_game_state
       end
-      
+
     end
   end
 end

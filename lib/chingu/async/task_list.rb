@@ -21,18 +21,18 @@
 
 module Chingu
   module Async
-    
+
     class TaskList
       # extend Forwardable
       # def_delegator :@queue, :push,  :enq
       # def_delegator :@queue, :shift, :deq
       # def_delegator :@queue, :first, :front
       # def_delegator :@queue, :clear
-      
+
       def initialize
         @queue = []
       end
-      
+
       #
       # Processes the first task on the queue, each tick removing the
       # task once it has finished.
@@ -44,24 +44,24 @@ module Chingu
           task
         end
       end
-      
+
       def front
         @queue.first
       end
-      
+
       def enq(*tasks)
         @queue.push(*tasks)
       end
-      
+
       def deq
         @queue.shift
       end
-      
+
       def clear
         @queue.clear
       end
-      
+
     end
-    
+
   end
 end

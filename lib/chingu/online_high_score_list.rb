@@ -30,14 +30,14 @@ module Chingu
   #
   class OnlineHighScoreList
     attr_reader :resource, :high_scores
-    
+
     def initialize(options = {})
       @limit = options[:limit] || 100
       @sort_on = options[:sort_on] || :score
       @login = options[:login] || options[:user]
       @password = options[:password]
       @game_id = options[:game_id]
-      
+
       begin
         require 'rest_client'
         require 'crack/xml'
@@ -47,13 +47,13 @@ module Chingu
         puts "gem install crack"
         exit
       end
-      
-      @resource = RestClient::Resource.new("http://api.gamercv.com/games/#{@game_id}/high_scores", 
+
+      @resource = RestClient::Resource.new("http://api.gamercv.com/games/#{@game_id}/high_scores",
                                               :user => @login, :password => @password, :timeout => 20, :open_timeout => 5)
-                                              
+
       @high_scores = Array.new  # Keeping a local copy in a ruby array
     end
-    
+
     #
     # Create a new high score list and try to load content from :file-parameter
     # If no :file is given, HighScoreList tries to load from file "high_score_list.yml"
@@ -61,16 +61,16 @@ module Chingu
     def self.load(options = {})
       high_score_list = OnlineHighScoreList.new(options)
       high_score_list.load
-      return high_score_list     
+      return high_score_list
     end
-            
+
     #
     # POSTs a new high score to the remote web service
     #
     # 'data' is a hash of key/value-pairs that can contain
     # :name - player-name, could be "AAA" or "Aaron Avocado"
-    # :score - the score 
-    # :text - free text, up to 255 chars, 
+    # :score - the score
+    # :text - free text, up to 255 chars,
     #
     # Returns the position the new score got in the high score list.
     # return 1 for number one spot. returns -1 if it didn't quallify as a high scores.
@@ -92,7 +92,7 @@ module Chingu
       return data["high_score"]["position"]
     end
     alias << add
-    
+
     #
     # Returns the position 'score' would get in among the high scores:
     #   @high_score_list.position_by_score(999999999) # most likely returns 1 for the number one spot
@@ -106,7 +106,7 @@ module Chingu
       end
       return nil
     end
-    
+
     #
     # Load data from remove web service.
     # Under the hood, this is accomplished through a simple REST-interface
@@ -116,7 +116,7 @@ module Chingu
       raise "You need to specify a Game_id to load a remote high score list"    unless defined?(@game_id)
       raise "You need to specify a Login to load a remote high score list"      unless defined?(@login)
       raise "You need to specify a Password to load a remote high score list"   unless defined?(@password)
-      
+
       @high_scores.clear
       begin
         res = @resource.get
@@ -129,18 +129,18 @@ module Chingu
       rescue RestClient::ResourceNotFound
         puts "Couldn't find Resource, did you specify a correct :game_id ?"
       end
-      
+
       @high_scores = @high_scores[0..@limit-1] unless @high_scores.empty?
       return @high_scores
     end
-    
+
     #
     # Direct access to @high_scores-array
     #
     def [](index)
       @high_scores[index]
     end
-    
+
     #
     # Iterate through @high_scores-array with each
     #
@@ -154,15 +154,15 @@ module Chingu
     def each_with_index
       @high_scores.each_with_index { |high_score, index| yield high_score, index }
     end
-    
+
     private
-    
+
     def add_to_list(data)
       @high_scores.push(data)
       @high_scores.sort! { |a, b| b[@sort_on] <=> a[@sort_on] }
       @high_scores = @high_scores[0..@limit-1]
     end
-    
+
     def force_symbol_hash(hash)
       symbol_hash = {}
       hash.each_pair do |key, value|
@@ -170,6 +170,6 @@ module Chingu
       end
       return symbol_hash
     end
-        
+
   end
 end

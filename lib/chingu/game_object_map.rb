@@ -24,7 +24,7 @@ module Chingu
   # ** This class is under heavy development, API will most likely change! **
   #
   # GameObjectMap can map any set of game objects into a 2D-array for fast lookup.
-  # You can choose gridsize with the :grid-parameter, defaults to [32,32]. 
+  # You can choose gridsize with the :grid-parameter, defaults to [32,32].
   # The smaller the grid the more memory GameObjectMap will eat.
   #
   # The game objects sent to GameObjectMap must respond to #bb (as provided by trait :bounding_box)
@@ -53,14 +53,14 @@ module Chingu
   #
   class GameObjectMap
     attr_reader :map, :game_object_positions
-    
+
     def initialize(options = {})
       @game_objects = options[:game_objects]
       @grid = options[:grid] || [32,32]
       @debug = options[:debug]
       create_map
     end
-    
+
     #
     # Creates a "tilemap" of game objects using @grid and @game_objects
     # Useful for faster collision detection on a grid-based freeform map created with the Edit game state.
@@ -68,41 +68,41 @@ module Chingu
     def create_map
       @map = []
       @game_object_positions = {}
-            
+
       @game_objects.each do |game_object|
         puts "#{game_object.class} @ #{game_object.x}/#{game_object.y} - #{game_object.bb}" if @debug
-        insert(game_object)                
+        insert(game_object)
       end
     end
-    
+
     #
     # Insert game_object into the map
     #
     def insert(game_object)
       start_x = ( game_object.bb.left / @grid[0] ).to_i
       stop_x =  ( game_object.bb.right / @grid[0] ).to_i
-      
+
       (start_x ... stop_x).each do |x|
         start_y = ( game_object.bb.top / @grid[1] ).to_i
         stop_y =  ( game_object.bb.bottom / @grid[1] ).to_i
-          
+
         @game_object_positions[game_object] = [(start_x ... stop_x), (start_y ... stop_y)]
-          
+
         @map[x] ||= []
         (start_y ... stop_y).each do |y|
           @map[x][y] = game_object
           puts "#{game_object.class} => map[#{x}][#{y}]" if @debug
         end
-      end      
+      end
     end
-        
+
     #
     # Removes a specific game object from the map, replace the cell-value with nil
     #
     def delete(game_object)
       range_x, range_y = @game_object_positions[game_object]
       return unless range_x && range_y
-      
+
       range_x.each do |x|
         range_y.each do |y|
           @map[x][y] = nil
@@ -110,7 +110,7 @@ module Chingu
       end
     end
     alias :clear_game_object :delete
-      
+
     #
     # Clear the game object residing in the cell given by real world coordinates x/y
     #
@@ -135,30 +135,30 @@ module Chingu
     def from_game_object(game_object)
       start_x = (game_object.bb.left / @grid[0]).to_i
       stop_x =  (game_object.bb.right / @grid[0]).to_i
-      
+
       (start_x .. stop_x).each do |x|
         start_y = (game_object.bb.top / @grid[1]).to_i
         stop_y =  (game_object.bb.bottom / @grid[1]).to_i
-          
+
         (start_y .. stop_y).each do |y|
           return @map[x][y]   if @map[x] && @map[x][y]
         end
-        
+
       end
       return nil
     end
-    
+
     #
     # Yields all game objects occupying any of the cells that given 'game_object' covers
     #
     def each_collision(game_object)
       start_x = (game_object.bb.left / @grid[0]).to_i
       stop_x =  (game_object.bb.right / @grid[0]).to_i
-      
+
       (start_x ... stop_x).each do |x|
         start_y = (game_object.bb.top / @grid[1]).to_i
         stop_y =  (game_object.bb.bottom / @grid[1]).to_i
-          
+
         (start_y ... stop_y).each do |y|
           yield @map[x][y]   if @map[x] && @map[x][y] && @map[x][y] != game_object  # Don't yield collisions with itself
         end
@@ -167,7 +167,7 @@ module Chingu
 
     #
     # Returns an array of GameObjects in this grid map that collide with the given
-    # GameObject (which is not on the grid). 
+    # GameObject (which is not on the grid).
     #
     def collisions_with(game_object)
       start_x = (game_object.bb.left / @grid[0]).to_i
@@ -188,7 +188,7 @@ module Chingu
 
     #
     # Yields to the block each GameObject in this map's grid which lies between
-    # two GameObjects: origin and dest. 
+    # two GameObjects: origin and dest.
     #
     def each_game_object_between(origin, dest)
       grid_spaces_between(origin, dest) do |x, y|
@@ -217,7 +217,7 @@ module Chingu
         if options[:target]
           x_pixels = x * @grid[0]
           y_pixels = y * @grid[1]
-          return true if options[:target].collision_at?(x_pixels, y_pixels) 
+          return true if options[:target].collision_at?(x_pixels, y_pixels)
         else
           obj = game_object_at(x, y)
           if options[:only]
@@ -241,7 +241,7 @@ module Chingu
 
     #
     # Returns an array of [x, y] grid coordinate pairs in this map's grid between
-    # the GameObjects origin and dest. 
+    # the GameObjects origin and dest.
     #
     # If a block is given, the method will yield x, y to the block for each grid
     # square.

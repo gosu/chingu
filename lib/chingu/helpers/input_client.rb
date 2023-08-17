@@ -21,10 +21,10 @@
 
 module Chingu
   module Helpers
-  
+
     #
     # Input-handler mixin that adds #input= and #input
-    # 
+    #
     # #input= does 2 things:
     # 1) Initialized an inputmap
     # 2) notifies the parent (could be main Window or a GameState) that the object wants input
@@ -38,7 +38,7 @@ module Chingu
     #
     # The shortened way, does exaclty as the above.
     #   self.input = [:left, :right]
-    #  
+    #
     # The multi-way, adds :a as trigger for method left, and :d as trigger for method :right
     #   self.input = {[:a, :left] => :left, [:right, :d] => :right}
     #
@@ -125,7 +125,7 @@ module Chingu
       protected
       def validate_input(key, action)
         key = validate_input_key(key)
-        
+
         message = case action
           when Method, Proc, Chingu::GameState
             nil
@@ -134,7 +134,7 @@ module Chingu
             "#{self.class} does not have a #{action} method" unless self.respond_to? action
             # Resolve to a method.
             action = method action
-            
+
             nil
 
           when Class
@@ -182,7 +182,7 @@ module Chingu
             # Into: { :left => :left, :right => :right, :space => :space }
             #
             input_list.each { |symbol| on_input(symbol) }
-            
+
           when Hash
             #
             # Un-nest input:  { [:pad_left, :arrow_left, :a] => :move_left }
@@ -260,7 +260,7 @@ module Chingu
             @parent.add_input_client(self)
           end
         end
-        
+
         self
       end
     end
