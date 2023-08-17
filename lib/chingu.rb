@@ -20,14 +20,14 @@
 #++
 
 CHINGU_ROOT = File.dirname(File.expand_path(__FILE__))
-ROOT = File.dirname(File.expand_path($0))
+ROOT = File.dirname(File.expand_path($PROGRAM_NAME))
 
-require 'gosu'
-require 'yaml'
-require 'timeout'
-require 'socket'
+require "gosu"
+require "yaml"
+require "timeout"
+require "socket"
 
-require_relative 'chingu/require_all' # Thanks to
+require_relative "chingu/require_all" # Thanks to
                                       # http://github.com/tarcieri/require_all !
 
 # Seems like we need to include chingu/helpers first for BasicGameObject
