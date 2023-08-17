@@ -48,22 +48,40 @@ module Chingu
       fullscreen ||= ARGV.include?("--fullscreen")
       $window = super(width, height, fullscreen, update_interval)
 
-      @root = File.dirname(File.expand_path($0))
+      @root = File.dirname(File.expand_path($PROGRAM_NAME))
 
-      Chingu::Asset.autoload_dirs += [".", File.join(@root, "assets"), File.join(@root, "media")]
-      Gosu::Image.autoload_dirs   += [".", File.join(@root, "images"), File.join(@root, "gfx"), File.join(@root, "media")]
-      Gosu::Sample.autoload_dirs  += [".", File.join(@root, "sounds"), File.join(@root, "sfx"), File.join(@root, "media")]
-      Gosu::Song.autoload_dirs    += [".", File.join(@root, "songs"), File.join(@root, "sounds"), File.join(@root, "sfx"), File.join(@root, "media")]
-      Gosu::Font.autoload_dirs    += [".", File.join(@root, "fonts"), File.join(@root, "media")]
+      Chingu::Asset.autoload_dirs += [".",
+                                      File.join(@root, "assets"),
+                                      File.join(@root, "media")]
+
+      Gosu::Image.autoload_dirs   += [".",
+                                      File.join(@root, "images"),
+                                      File.join(@root, "gfx"),
+                                      File.join(@root, "media")]
+      Gosu::Sample.autoload_dirs  += [".",
+                                      File.join(@root, "sounds"),
+                                      File.join(@root, "sfx"),
+                                      File.join(@root, "media")]
+      Gosu::Song.autoload_dirs    += [".",
+                                      File.join(@root, "songs"),
+                                      File.join(@root, "sounds"),
+                                      File.join(@root, "sfx"),
+                                      File.join(@root, "media")]
+      Gosu::Font.autoload_dirs    += [".",
+                                      File.join(@root, "fonts"),
+                                      File.join(@root, "media")]
 
       @game_objects = GameObjectList.new
-      @input_clients = Array.new
+      @input_clients = []
 
       @fps_counter = FPSCounter.new
       @game_state_manager = GameStateManager.new
+
       @milliseconds_since_last_tick = 0
       @factor = 1
+
       @cursor = false
+
       @times_muted = 0
       @volume = DEFAULT_VOLUME
 
@@ -71,7 +89,7 @@ module Chingu
     end
 
     #
-    # If this returns true, GOSU will show a cursor
+    # If this returns true, Gosu will show a cursor
     # Chingu solves this with the $window.cursor = [true|false] accessor
     #
     def needs_cursor?
@@ -79,13 +97,14 @@ module Chingu
     end
 
     # Placeholder to be overwritten
-    def setup; end;
+    def setup; end
 
     #
-    # Make all old and future images use hard borders. Hard borders + scaling = retro feel!
+    # Make all old and future images use hard borders.
+    # Hard borders + scaling = retro feel!
     #
     def retrofy
-      Gosu::enable_undocumented_retrofication
+      Gosu.enable_undocumented_retrofication
     end
 
     #
@@ -118,31 +137,20 @@ module Chingu
     # "game logic" update that is safe to call even between Gosus update-calls
     #
     def intermediate_update
-      #
-      # Dispatch inputmap for main window
-      #
+      # Dispatch input map for main window
       dispatch_input_for(self)
 
-      #
       # Dispatch input for all input-clients handled by to main window (game objects with input created in main win)
-      #
       @input_clients.each { |game_object| dispatch_input_for(game_object) unless game_object.paused? }
 
-
-      #
       # Call update() on all game objects belonging to the main window.
-      #
       @game_objects.update
 
-      #
       # Call update() on all game objects belonging to the current game state.
-      #
 
-      #
       # Call update() on our game_state_manger
       # -> call update on active states
       # -> call update on all game objects in that state
-      #
       @game_state_manager.update
     end
 
@@ -152,14 +160,10 @@ module Chingu
     # Gosu will call this each game-iteration just after #update
     #
     def draw
-      #
       # Draw all game objects associated with the main window.
-      #
       @game_objects.draw
 
-      #
       # Let the game state manager call draw on the active game state (if any)
-      #
       @game_state_manager.draw
     end
 
@@ -169,6 +173,7 @@ module Chingu
     #
     def button_up(id)
       dispatch_button_up(id, self)
+
       @input_clients.each { |object| dispatch_button_up(id, object) unless object.paused? }
       @game_state_manager.button_up(id)
     end
@@ -179,6 +184,7 @@ module Chingu
     #
     def button_down(id)
       dispatch_button_down(id, self)
+
       @input_clients.each { |object| dispatch_button_down(id, object) unless object.paused? }
       @game_state_manager.button_down(id)
     end
@@ -190,9 +196,7 @@ module Chingu
       super
 
       # Clear out all assets, tied to this $window, so that a new instance can create more.
-      [Gosu::Image, Gosu::Song, Gosu::Font, Gosu::Sample].each do |asset|
-        asset.clear
-      end
+      [Gosu::Image, Gosu::Song, Gosu::Font, Gosu::Sample].each(&:clear)
 
       $window = nil
     end
@@ -206,7 +210,7 @@ module Chingu
       raise "Bad volume setting" unless value.is_a? Numeric
 
       old_volume = @volume
-      @volume = [[value, 1.0].min, 0.0].max.to_f
+      @volume = volume.clamp(0.0, 1.0)
 
       Song.send(:recalculate_volumes, old_volume, @volume)
 
@@ -224,9 +228,8 @@ module Chingu
     # Mute the window and all Samples and Songs played.
     # Muting stacks, so sound will only be heard if the number of unmutes is the same as the number of mutes.
     def mute
-      unless muted?
-        Song.send(:resources).each_value {|song| song.send :mute }
-      end
+      Song.send(:resources).each_value { |song| song.send :mute } unless muted?
+
       @times_muted += 1
 
       self
@@ -236,17 +239,16 @@ module Chingu
     # Muting stacks, so sound will only be heard if the number of unmutes is the same as the number of mutes.
     def unmute
       raise "Can't unmute when not muted" unless muted?
+
       @times_muted -= 1
-      unless muted?
-        Song.send(:resources).each_value {|song| song.send :unmute }
-      end
+      Song.send(:resources).each_value { |song| song.send :unmute } unless muted?
 
       self
     end
 
     # Is the window currently muted?
     def muted?
-      @times_muted > 0
+      @times_muted.positive?
     end
   end
 end
