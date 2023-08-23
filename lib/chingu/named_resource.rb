@@ -76,13 +76,10 @@ module Chingu
   #      end
   #
   module NamedResource
-
-
     #  Adds class methods when the NamedResource module is included
     #  in a class. (Here, we are assuming that the NamedResource
     #  module was included in a class called MyClass.)
     module NamedResourceClassMethods
-
       #  An Array of paths to check for files. See #find_file.
       attr_accessor :autoload_dirs
 
@@ -102,7 +99,7 @@ module Chingu
       #  Hash table under this name, and sets the instance's @name
       #  to this name.
       #
-      def []( name )
+      def [](name)
         result = @resources[name]
 
         if result.nil?
@@ -116,7 +113,6 @@ module Chingu
         return result
       end
 
-
       #  call-seq:
       #    MyClass[ name ] = instance
       #
@@ -127,9 +123,13 @@ module Chingu
       #  May raise:  TypeError, if you try to store anything
       #             that is not kind of this class.
       #
-      def []=( name, value )
+      def []=(name, value)
+        # TODO: remove those comments?
+
         ##if( value.kind_of? self )
-          @resources[name] = value
+
+        @resources[name] = value
+
         ##else
         ## raise TypeError, "#{self}#[]= can only store instances of #{self}"
         ##end
@@ -151,10 +151,9 @@ module Chingu
       #  path to a file which matches the name. That's what it's there
       #  for, so you should use it!
       #
-      def autoload( name )
+      def autoload(_name)
         nil
       end
-
 
       #  call-seq:
       #    MyClass.basename( path )  ->  filename
@@ -163,10 +162,9 @@ module Chingu
       #  filename without the directory). Same as
       #  File.basename
       #
-      def basename( path )
-        File.basename( path )
+      def basename(path)
+        File.basename(path)
       end
-
 
       #  call-seq:
       #    MyClass.exist?( path )  ->  true or false
@@ -175,10 +173,9 @@ module Chingu
       #  that exists, otherwise false. Same as
       #  File.exist?
       #
-      def exist?( path )
+      def exist?(path)
         File.exist?(path)
       end
-
 
       #  call-seq:
       #    MyClass.find_file( filename )  ->  path or nil
@@ -190,40 +187,35 @@ module Chingu
       #  If no directories have a file with that name,
       #  return nil.
       #
-      def find_file( filename )
-        dir = @autoload_dirs.find { |dir|
-          exist?( File.join(dir,filename) )
-        }
+      def find_file(filename)
+        dir = @autoload_dirs.find do |dir|
+          exist?(File.join(dir, filename))
+        end
 
         if dir
-          return File.join(dir,filename)
+          return File.join(dir, filename)
         else
           return nil
         end
       end
-
     end
-
 
     #  Sets up the class when this module is included.
     #  Adds the class methods and defines class instance
     #  variables.
-    def self.included( object ) # :nodoc:
-
+    def self.included(object) # :nodoc:
       class << object
         include NamedResourceClassMethods
       end
 
       object.instance_eval do
-        @resources = Hash.new
+        @resources = {}
         @autoload_dirs = []
       end
-
     end
 
-
     # Returns the instance's @name. See also #name=.
-    def name
+    def names
       @name
     end
 
@@ -239,7 +231,7 @@ module Chingu
     #
     #  May raise:  TypeError, if new_name is not a String or nil.
     #
-    def name=( new_name )
+    def name=(new_name)
       if new_name.nil?
         return @name = nil
       end
@@ -251,8 +243,5 @@ module Chingu
       @name = new_name.dup
       @name.freeze
     end
-
-
   end
-
 end
