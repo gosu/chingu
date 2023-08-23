@@ -9,13 +9,13 @@ module Chingu
     has_trait :effect
 
     def initialize(options)
-      super({:mode => :additive}.merge(options))
+      super({ :mode => :additive }.merge(options))
+
       @animation = options[:animation] || nil
     end
 
     def update
-      self.image = @animation.next   if @animation
+      self.image = @animation.next if @animation
     end
-
   end
 end
