@@ -19,7 +19,6 @@
 #
 #++
 
-
 module Chingu
   #
   # Chingu incorporates a basic push/pop game state system (as discussed here: http://www.gamedev.net/community/forums/topic.asp?topic_id=477320).
@@ -60,15 +59,17 @@ module Chingu
     attr_accessor :game_objects, :game_state_manager, :previous_game_state
 
     class_inheritable_accessor :trait_options
-    @trait_options = Hash.new
-    def trait_options; self.class.trait_options; end
+    @trait_options = {}
+
+    def trait_options
+      self.class.trait_options
+    end
 
     #
     # Adds a trait or traits to a certain game class
     # Executes a standard ruby "include" the specified module
     #
     def self.trait(trait, options = {})
-
       if trait.is_a?(::Symbol) || trait.is_a?(::String)
         ## puts "trait #{trait}, #{options}"
         begin
@@ -96,17 +97,23 @@ module Chingu
         end
       end
     end
-    class << self; alias :has_trait :trait;  end
+
+    class << self
+      alias has_trait trait
+    end
 
     def self.traits(*traits)
       Array(traits).each { |trait| trait trait }
     end
-    class << self; alias :has_traits :traits; end
+
+    class << self
+      alias has_traits traits
+    end
 
     def initialize(options = {})
       @options = options
       @game_objects = GameObjectList.new
-      @input_clients = Array.new
+      @input_clients = []
 
       # Game state manager can be run alone
       if defined?($window) && $window.respond_to?(:game_state_manager)
@@ -143,7 +150,6 @@ module Chingu
       Chingu::Inflector.underscore(self.class.to_s)
     end
 
-
     def setup
       # Your game state setup logic here.
     end
@@ -153,7 +159,10 @@ module Chingu
     #
     def button_down(id)
       dispatch_button_down(id, self)
-      @input_clients.each { |object| dispatch_button_down(id, object) unless object.paused? } if @input_clients
+
+      @input_clients.each do |object|
+        dispatch_button_down(id, object) unless object.paused?
+      end if @input_clients
     end
 
     #
@@ -161,7 +170,10 @@ module Chingu
     #
     def button_up(id)
       dispatch_button_up(id, self)
-      @input_clients.each { |object| dispatch_button_up(id, object) unless object.paused? }   if @input_clients
+
+      @input_clients.each do |object|
+        dispatch_button_up(id, object) unless object.paused?
+      end if @input_clients
     end
 
     #
@@ -170,7 +182,9 @@ module Chingu
     def update
       dispatch_input_for(self)
 
-      @input_clients.each { |game_object| dispatch_input_for(game_object) unless game_object.paused? }
+      @input_clients.each do |game_object|
+        dispatch_input_for(game_object) unless game_object.paused?
+      end
 
       @game_objects.update
     end
@@ -183,9 +197,11 @@ module Chingu
     end
 
     # Placeholder for trait-system to override
-    def setup_trait(options);end
-    def update_trait;end
-    def draw_trait;end
+    def setup_trait(options); end
+
+    def update_trait; end
+
+    def draw_trait; end
 
     #
     # Closes game state by poping it off the stack (and activating the game state below)
