@@ -41,10 +41,11 @@ module Chingu
     #
     def initialize(options = {})
       super(options)
+
       @repeat_x = options[:repeat_x] || true
       @repeat_y = options[:repeat_y] || false
 
-      @layers = Array.new
+      @layers = []
     end
 
     #
@@ -53,17 +54,23 @@ module Chingu
     #   @parallax << {:image => "landscape.png", :damping => 1}
     #
     def add_layer(arg)
-      @layers << (arg.is_a?(ParallaxLayer) ? arg : ParallaxLayer.new(arg.merge({:parallax => self})))
+      @layers <<  if arg.is_a?(ParallaxLayer)
+                    arg
+                  else
+                    ParallaxLayer.new(arg.merge({ :parallax => self }))
+                  end
     end
-    alias << add_layer
 
+    alias << add_layer
 
     #
     # returns true if any part of the parallax-scroller is inside the window
     #
     def inside_window?
       return true if @repeat_x || @repeat_y
+
       @layers.each { |layer| return true if layer.inside_window? }
+
       return false
     end
 
@@ -111,10 +118,10 @@ module Chingu
         layer.y = @y / layer.damping
 
         # This is the magic that repeats the layer to the left and right
-        layer.x -= layer.image.width  while (layer.repeat_x && layer.x > 0)
+        layer.x -= layer.image.width while layer.repeat_x && layer.x.positive?
 
         # This is the magic that repeats the layer to the left and right
-        layer.y -= layer.image.height while (layer.repeat_y && layer.y > 0)
+        layer.y -= layer.image.height while layer.repeat_y && layer.y.positive?
       end
     end
 
@@ -125,7 +132,8 @@ module Chingu
       @layers.each do |layer|
         save_x, save_y = layer.x, layer.y
 
-        # If layer lands inside our window and repeat_x is true (defaults to true), draw it until window ends
+        # If layer lands inside our window and repeat_x is true
+        # (defaults to true), draw it until window ends
         while layer.repeat_x && layer.x < $window.width
           while layer.repeat_y && layer.y < $window.height
             layer.draw
@@ -147,7 +155,8 @@ module Chingu
 
         layer.x = save_x
       end
-      self
+
+      return self
     end
   end
 
@@ -167,7 +176,8 @@ module Chingu
       # No auto update/draw, the parentclass Parallax takes care of that!
       options.merge!(:visible => false, :paused => true)
 
-      options = {:rotation_center => @parallax.options[:rotation_center]}.merge(options)  if @parallax
+      options = { :rotation_center => @parallax.options[:rotation_center] }
+                .merge(options) if @parallax
 
       #
       # Default arguments for repeat_x and repeat_y
@@ -175,9 +185,9 @@ module Chingu
       # First added, furthest behind when drawn.
       #
       options = {
-          :repeat_x => true,
-          :repeat_y => false,
-          :zorder   => @parallax ? (@parallax.zorder + @parallax.layers.count) : 100
+        :repeat_x => true,
+        :repeat_y => false,
+        :zorder   => @parallax ? (@parallax.zorder + @parallax.layers.count) : 100
       }.merge(options)
 
       @repeat_x = options[:repeat_x]
@@ -200,10 +210,9 @@ module Chingu
       image_y = y - @y
 
       # On a 100 x 100 image, get_pixel works to 99 x 99
-      image_x -= @image.width   while image_x >= @image.width
+      image_x -= @image.width while image_x >= @image.width
 
       @image.get_pixel(image_x, image_y)
     end
-
   end
 end
