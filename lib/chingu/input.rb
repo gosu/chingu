@@ -23,6 +23,8 @@ module Chingu
   module Input
     include Gosu
 
+    # TODO: check if there's missing keys
+
     #
     # Ruby symbols describing http://www.libgosu.org/rdoc/classes/Gosu.html
     #
@@ -90,27 +92,27 @@ module Chingu
 
     # Numbers, 0-9
     (0..9).each do |number|
-      CONSTANT_TO_SYMBOL[eval("Kb#{number.to_s}")] = [number.to_s.to_sym]
+      CONSTANT_TO_SYMBOL[eval("Kb#{number}")] = [number.to_s.to_sym]
     end
 
     # Numpad-numbers, 0-9
     (0..9).each do |number|
-      CONSTANT_TO_SYMBOL[eval("KbNumpad#{number.to_s}")] = ["numpad_#{number.to_s}".to_sym]
+      CONSTANT_TO_SYMBOL[eval("KbNumpad#{number}")] = ["numpad_#{number}".to_sym]
     end
 
     #F-keys, F1-F12
     (1..12).each do |number|
-      CONSTANT_TO_SYMBOL[eval("KbF#{number.to_s}")] = ["f#{number.to_s}".to_sym, "F#{number.to_s}".to_sym]
+      CONSTANT_TO_SYMBOL[eval("KbF#{number}")] = ["f#{number}".to_sym, "F#{number}".to_sym]
     end
 
     # Gamepad-buttons 0-15
     (0..15).each do |number|
-      CONSTANT_TO_SYMBOL[eval("GpButton#{number.to_s}")] = [
-        "gamepad_button_#{number.to_s}".to_sym,
-        "gamepad_#{number.to_s}".to_sym,
-        "pad_button_#{number.to_s}".to_sym,
-        "pad_#{number.to_s}".to_sym,
-        "gp_#{number.to_s}".to_sym
+      CONSTANT_TO_SYMBOL[eval("GpButton#{number}")] = [
+        "gamepad_button_#{number}".to_sym,
+        "gamepad_#{number}".to_sym,
+        "pad_button_#{number}".to_sym,
+        "pad_#{number}".to_sym,
+        "gp_#{number}".to_sym
       ]
     end
 
@@ -118,7 +120,7 @@ module Chingu
     # Reverse CONSTANT_TO_SYMBOL -> SYMBOL_TO_CONSTANT
     # like: SYMBOL_TO_CONSTANT = CONSTANT_TO_SYMBOL.invert.dup
     #
-    SYMBOL_TO_CONSTANT = Hash.new
+    SYMBOL_TO_CONSTANT = {}
     CONSTANT_TO_SYMBOL.each_pair do |constant, symbols|
       symbols.each do |symbol|
         SYMBOL_TO_CONSTANT[symbol] = constant
