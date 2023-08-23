@@ -22,9 +22,9 @@
 
 module Chingu
   module Inflector
-    #
-    # "automatic_assets" -> "AutomaticAssets"
-    #
+		#
+		# "automatic_assets" -> "AutomaticAssets"
+		#
     def Inflector.camelize(lower_case_and_underscored_word, first_letter_in_uppercase = true)
       if first_letter_in_uppercase
         lower_case_and_underscored_word.to_s
@@ -41,19 +41,20 @@ module Chingu
     # "Chingu::GameObject" -> "GameObject"
     #
     def Inflector.demodulize(class_name_in_module)
-      class_name_in_module.to_s.gsub(/^.*::/, "")
+      class_name_in_module.to_s.gsub(/^.*::/, '')
     end
 
-    #
-    # "FireBall" -> "fire_ball"
-    #
-    def Inflector.underscore(camel_cased_word)
-      camel_cased_word.to_s
-                      .gsub(/::/, "/")
-                      .gsub(/([A-Z]+)([A-Z][a-z])/, "\1_\2")
-                      .gsub(/([a-z\d])([A-Z])/, "\1_\2")
-                      .tr("-", "_")
-                      .downcase
-    end
+		#
+		# "FireBall" -> "fire_ball"
+		#
+		def Inflector.underscore(camel_cased_word)
+			camel_cased_word.to_s
+                      .gsub(/::/, '/')
+                      .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+			                .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+			                .tr("-", "_")
+			                .downcase
+		end
+
   end
 end
