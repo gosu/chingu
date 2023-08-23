@@ -39,6 +39,7 @@ module Chingu
     @@size = nil
     @@font = nil
     @@padding = 5
+
     def self.font; @@font; end
     def self.font=(value); @@font = value; end
     def self.size; @@size; end
@@ -51,10 +52,14 @@ module Chingu
     #
     # Takes the standard GameObject-hash-arguments but also:
     #   :text               - a string of text
-    #   :font_name|:font    - Name of a system font, or a filename to a TTF file (must contain ? does not work on Linux).
+    #   :font_name|:font    - Name of a system font, or a filename to a TTF
+    #                         file (must contain? does not work on Linux).
     #   :height|:size       - Height of the font in pixels.
     #   :line_spacing	      - Spacing between two lines of text in pixels.
-    #   :max_width	        - Width of the bitmap that will be returned. Text will be split into multiple lines to avoid drawing over the right border. When a single word is too long, it will be truncated.
+    #   :max_width	        - Width of the bitmap that will be returned.
+    #                         Text will be split into multiple lines to avoid
+    #                         drawing over the right border. When a single
+    #                         word is too long, it will be truncated.
     #   :align	            - One of :left, :right, :center or :justify.
     #
     # if :max_width is given the text is drawn using :line_spacing, :align and :max_width
@@ -65,30 +70,33 @@ module Chingu
         text = nil
       end
 
-      # We remove the :size param so it doesn't get to GameObject where it means something else
+      # We remove the :size param so it doesn't get to GameObject
+      # where it means something else
       @size = options.delete(:size) || options.delete(:height) || @@size || 15
 
-      options = {:rotation_center => :top_left}.merge(options)
+      options = { :rotation_center => :top_left }.merge(options)
 
       super(options)
 
       @text = text || options[:text] || "-No text specified-"
-      @font =  options[:font] || @@font || Gosu::default_font_name()
+      @font = options[:font] || @@font || Gosu.default_font_name
       @line_spacing = options[:line_spacing] || 1
       @align = options[:align] || :left
       @max_width = options[:max_width]
       @padding = options[:padding] || @@padding
 
       @gosu_font = Gosu::Font[@font, @size]
-      create_image  unless @image
+      create_image unless @image
 
       if options[:background]
         @background = GameObject.new(:image => options[:background])
+
         bg_update
+
         @no_bg_update = options[:no_bg_update] || false # always update background attribute
       end
 
-      self.height = options[:height]  if options[:height]
+      self.height = options[:height] if options[:height]
     end
 
 
@@ -120,8 +128,9 @@ module Chingu
     # Draws @background if present + our text in @image
     #
     def draw
-      @background.draw  if @background    # draw our background, if any
-      super                               # super -> GameObject#draw which draws out text in form of @image
+      @background.draw if @background # draw our background, if any
+                                      # super -> GameObject#draw which draws
+      super                           # out text in form of @image
     end
 
     private

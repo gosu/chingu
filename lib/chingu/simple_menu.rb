@@ -36,7 +36,7 @@ module Chingu
 
       # @font_size = options.delete(:font_size) || 30
       @menu_items = options.delete(:menu_items)
-      @x = options.delete(:x) || $window.width/2
+      @x = options.delete(:x) || $window.width / 2
       @y = options.delete(:y) || 0
       @spacing = options.delete(:spacing) || 100
       @items = []
@@ -45,13 +45,13 @@ module Chingu
       y = @y
       menu_items.each do |key, value|
         item = if key.is_a? String
-          Text.new(key, options.dup)
-        elsif key.is_a? Image
-          GameObject.new(options.merge!(:image => key))
-        elsif key.is_a? GameObject
-          key.options.merge!(options.dup)
-          key
-        end
+                 Text.new(key, options.dup)
+               elsif key.is_a? Image
+                GameObject.new(options.merge!(:image => key))
+               elsif key.is_a? GameObject
+                 key.options.merge!(options.dup)
+                 key
+               end
 
         item.options[:on_select] = method(:on_select)
         item.options[:on_deselect] = method(:on_deselect)
@@ -60,17 +60,23 @@ module Chingu
         item.rotation_center = :center_top
         item.x = @x
         item.y = y
+
         y += item.height + @spacing
+
         @items << item
       end
+
       @selected = options[:selected] || 0
       step(0)
 
-      self.input = {:up => lambda{step(-1)}, :down => lambda{step(1)}, [:return, :space] => :select}
+      self.input = { :up => lambda{step(-1)},
+                     :down => lambda{step(1)},
+                     [:return, :space] => :select}
     end
 
     #
-    # Moves selection within the menu. Can be called with negative or positive values. -1 and 1 makes most sense.
+    # Moves selection within the menu. Can be called with negative or
+    # positive values. -1 and 1 makes most sense.
     #
     def step(value)
       selected.options[:on_deselect].call(selected)
@@ -97,13 +103,13 @@ module Chingu
     end
 
     def draw
-      @items.each { |item| item.draw }
+      @items.each(&:draw)
     end
 
     private
 
     #
-    # TODO - DRY this up with input dispatcher somehow
+    # TODO: - DRY this up with input dispatcher somehow
     #
     def dispatch_action(action, object)
       case action
@@ -118,7 +124,8 @@ module Chingu
           game_state.push_game_state(action)
         end
       else
-        # TODO possibly raise an error? This ought to be handled when the input is specified in the first place.
+        # TODO: possibly raise an error? This ought to be handled when the
+        #       input is specified in the first place.
       end
     end
   end

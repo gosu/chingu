@@ -87,9 +87,10 @@ module Chingu
     # height,width,factor_x,factor_y,center_x,center_y as well...
     #
     def inside?(object, y = nil)
-      x, y = y ? [object,y] : [object.x, object.y]
+      x, y = y ? [object, y] : [object.x, object.y]
+
       x >= @x && x <= (@x + $window.width) &&
-      y >= @y && y <= (@y + $window.height)
+        y >= @y && y <= (@y + $window.height)
     end
 
     # Returns true object is outside the view port
@@ -104,7 +105,7 @@ module Chingu
     #
     def inside_game_area?(object)
       object.x >= @game_area.x && object.x <= @game_area.width &&
-      object.y >= @game_area.x && object.y <= @game_area.height
+        object.y >= @game_area.x && object.y <= @game_area.height
     end
 
     # Returns true object is outside the game area
@@ -133,9 +134,12 @@ module Chingu
     #
     def x=(x)
       @x = x
-      if @game_area
-        @x = @game_area.x * @factor_x         if @x < @game_area.x * @factor_x
-        @x = (@game_area.width * @factor_x) - $window.width   if @x > (@game_area.width * @factor_x) - $window.width
+
+      return if @game_area
+
+      @x = @game_area.x * @factor_x if @x < @game_area.x * @factor_x
+      if @x > (@game_area.width * @factor_x) - $window.width
+        @x = (@game_area.width * @factor_x) - $window.width
       end
     end
 
@@ -144,9 +148,11 @@ module Chingu
     #
     def y=(y)
       @y = y
-      if @game_area
-        @y = @game_area.y * @factor_y           if @y < @game_area.y * @factor_y
-        @y = (@game_area.height * @factor_y) - $window.height   if @y > (@game_area.height * @factor_y) - $window.height
+      return if @game_area
+
+      @y = @game_area.y * @factor_y if @y < @game_area.y * @factor_y
+      if @y > (@game_area.height * @factor_y) - $window.height
+        @y = (@game_area.height * @factor_y) - $window.height
       end
     end
 
@@ -161,14 +167,13 @@ module Chingu
 
     def to_s
       a = @game_area
-      %/
-Vieport
- Position: #{@x}, #{@y}
- Game area: #{a.x},#{a.y},#{a.width},#{a.height}"
- Target: #{@target_x}, #{@target_y}
-      /
+
+      <<~INFO
+        Vieport
+        Position: #{@x}, #{@y}
+        Game area: #{a.x},#{a.y},#{a.width},#{a.height}"
+        Target: #{@target_x}, #{@target_y}
+      INFO
     end
-
-
   end
 end
