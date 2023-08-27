@@ -144,7 +144,7 @@ module Chingu
         ## MOVED: self.inside_state = current_game_state
       end
 
-      self.inside_state = nil   # no longer 'inside' (as in within initialize() etc) a game state
+      self.inside_state = nil # no longer 'inside' (as in within initialize() etc) a game state
     end
     alias :push :push_game_state
 
@@ -159,7 +159,7 @@ module Chingu
       #
       # Give the soon-to-be-disabled state a chance to clean up by calling finalize() on it.
       #
-      current_game_state.finalize    if current_game_state.respond_to?(:finalize) && options[:finalize]
+      current_game_state.finalize if current_game_state.respond_to?(:finalize) && options[:finalize]
 
       #
       # Activate the game state "bellow" current one with a simple Array.pop
@@ -181,7 +181,7 @@ module Chingu
       end
 
       ## MOVED: self.inside_state = current_game_state
-      self.inside_state = nil   # no longer 'inside' (as in within initialize() etc) a game state
+      self.inside_state = nil # no longer 'inside' (as in within initialize() etc) a game state
     end
     alias :pop :pop_game_state
 
@@ -235,7 +235,7 @@ module Chingu
     # If you're using Chingu::Window instead of Gosu::Window this will automaticly be called.
     #
     def button_up(id)
-      current_game_state.button_up(id)  if current_game_state
+      current_game_state.button_up(id) if current_game_state
     end
 
     #
@@ -245,7 +245,7 @@ module Chingu
     # If you're using Chingu::Window instead of Gosu::Window this will automaticly be called.
     #
     def update(options = {})
-      puts current_game_state.to_s  if options[:debug]
+      puts current_game_state.to_s if options[:debug]
       current_game_state.update_trait if current_game_state
       current_game_state.update       if current_game_state
     end
