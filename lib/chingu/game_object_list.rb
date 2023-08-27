@@ -92,19 +92,23 @@ module Chingu
     end
 
     def update
-      @unpaused_game_objects.each { |go| go.update_trait; go.update; }
+      @unpaused_game_objects.each { |go| go.update_trait
+ go.update }
     end
 
     def force_update
-      @game_objects.each { |go| go.update_trait; go.update; }
+      @game_objects.each { |go| go.update_trait
+ go.update }
     end
 
     def draw
-      @visible_game_objects.each { |go| go.draw_trait; go.draw; }
+      @visible_game_objects.each { |go| go.draw_trait
+ go.draw }
     end
 
     def force_draw
-      @game_objects.each { |go| go.draw_trait; go.draw }
+      @game_objects.each { |go| go.draw_trait
+ go.draw }
     end
 
     def draw_relative(x = 0,
