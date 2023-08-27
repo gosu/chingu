@@ -35,8 +35,9 @@ module Chingu
   #   @map.at(100, 100)         # returns one TerrainObject at x/y: 100/100
   #   @map.game_object(player)  # returns one TerrainObject which collides with player.bounding_box
   #
-  # A GameObjectMap is ment to be used for static non-moving objects, where a map can be calculated once and then used for fast lookups.
-  # This makes GameObjectMap very well suited for terrain for a player to walk on / collide with.
+  # A GameObjectMap is ment to be used for static non-moving objects, where a map
+  # can be calculated once and then used for fast lookups. This makes
+  # GameObjectMap very well suited for terrain for a player to walk on / collide with.
   #
   # One cell in the GameObjectMap can only be occupied by one game object.
   # If you need many objects at the same cell, use 2 GameObjectMaps, something like:
@@ -47,7 +48,9 @@ module Chingu
   #   @player.stop_falling  if @terrain.at(@player.x, @player)
   #   @player.die           if @mine.at(@player.x, @player)
   #
-  # Take note, since there can be only 1 game object per cell a huge game object could very well "cover out" another smaller game objects occupying the same cells.
+  # Take note, since there can be only 1 game object per cell a huge game
+  # object could very well "cover out" another smaller game objects occupying
+  # the same cells.
   #
   # ** This class is under heavy development, API will most likely change! **
   #
@@ -56,14 +59,16 @@ module Chingu
 
     def initialize(options = {})
       @game_objects = options[:game_objects]
-      @grid = options[:grid] || [32,32]
+      @grid = options[:grid] || [32, 32]
       @debug = options[:debug]
+
       create_map
     end
 
     #
     # Creates a "tilemap" of game objects using @grid and @game_objects
-    # Useful for faster collision detection on a grid-based freeform map created with the Edit game state.
+    # Useful for faster collision detection on a grid-based freeform map
+    # created with the Edit game state.
     #
     def create_map
       @map = []
@@ -79,17 +84,18 @@ module Chingu
     # Insert game_object into the map
     #
     def insert(game_object)
-      start_x = ( game_object.bb.left / @grid[0] ).to_i
-      stop_x =  ( game_object.bb.right / @grid[0] ).to_i
+      start_x = (game_object.bb.left / @grid[0]).to_i
+      stop_x = (game_object.bb.right / @grid[0]).to_i
 
-      (start_x ... stop_x).each do |x|
-        start_y = ( game_object.bb.top / @grid[1] ).to_i
-        stop_y =  ( game_object.bb.bottom / @grid[1] ).to_i
+      (start_x...stop_x).each do |x|
+        start_y = (game_object.bb.top / @grid[1]).to_i
+        stop_y = (game_object.bb.bottom / @grid[1]).to_i
 
-        @game_object_positions[game_object] = [(start_x ... stop_x), (start_y ... stop_y)]
+        @game_object_positions[game_object] = [(start_x...stop_x),
+                                               (start_y...stop_y)]
 
         @map[x] ||= []
-        (start_y ... stop_y).each do |y|
+        (start_y...stop_y).each do |y|
           @map[x][y] = game_object
           puts "#{game_object.class} => map[#{x}][#{y}]" if @debug
         end
@@ -101,6 +107,7 @@ module Chingu
     #
     def delete(game_object)
       range_x, range_y = @game_object_positions[game_object]
+
       return unless range_x && range_y
 
       range_x.each do |x|
@@ -109,7 +116,8 @@ module Chingu
         end
       end
     end
-    alias :clear_game_object :delete
+
+    alias clear_game_object delete
 
     #
     # Clear the game object residing in the cell given by real world coordinates x/y
@@ -117,6 +125,7 @@ module Chingu
     def clear_at(x, y)
       lookup_x = (x / @grid[0]).to_i
       lookup_y = (y / @grid[1]).to_i
+
       @map[lookup_x][lookup_y] = nil
     end
 
@@ -126,7 +135,8 @@ module Chingu
     def at(x, y)
       lookup_x = (x / @grid[0]).to_i
       lookup_y = (y / @grid[1]).to_i
-      @map[lookup_x][lookup_y]  rescue nil  # Benchmark this against @map[lookup_x] && @map[lookup_x][lookup_y] => prob faster
+
+      @map[lookup_x][lookup_y] rescue nil # Benchmark this against @map[lookup_x] && @map[lookup_x][lookup_y] => prob faster
     end
 
     #
@@ -136,16 +146,16 @@ module Chingu
       start_x = (game_object.bb.left / @grid[0]).to_i
       stop_x =  (game_object.bb.right / @grid[0]).to_i
 
-      (start_x .. stop_x).each do |x|
+      (start_x..stop_x).each do |x|
         start_y = (game_object.bb.top / @grid[1]).to_i
         stop_y =  (game_object.bb.bottom / @grid[1]).to_i
 
-        (start_y .. stop_y).each do |y|
-          return @map[x][y]   if @map[x] && @map[x][y]
+        (start_y..stop_y).each do |y|
+          return @map[x][y] if @map[x] && @map[x][y]
         end
-
       end
-      return nil
+
+      return
     end
 
     #
@@ -155,12 +165,12 @@ module Chingu
       start_x = (game_object.bb.left / @grid[0]).to_i
       stop_x =  (game_object.bb.right / @grid[0]).to_i
 
-      (start_x ... stop_x).each do |x|
+      (start_x...stop_x).each do |x|
         start_y = (game_object.bb.top / @grid[1]).to_i
         stop_y =  (game_object.bb.bottom / @grid[1]).to_i
 
-        (start_y ... stop_y).each do |y|
-          yield @map[x][y]   if @map[x] && @map[x][y] && @map[x][y] != game_object  # Don't yield collisions with itself
+        (start_y...stop_y).each do |y|
+          yield @map[x][y] if @map[x] && @map[x][y] && @map[x][y] != game_object # Don't yield collisions with itself
         end
       end
     end
@@ -174,15 +184,16 @@ module Chingu
       stop_x =  (game_object.bb.right / @grid[0]).to_i
 
       objects = []
-      (start_x ... stop_x).each do |x|
+      (start_x...stop_x).each do |x|
         start_y = (game_object.bb.top / @grid[1]).to_i
         stop_y =  (game_object.bb.bottom / @grid[1]).to_i
 
-        (start_y ... stop_y).each do |y|
+        (start_y...stop_y).each do |y|
           obj = game_object_at(x, y)
-          objects << @map[x][y] if obj and obj != game_object  # Don't yield collisions with itself
+          objects << @map[x][y] if obj and obj != game_object # Don't yield collisions with itself
         end
       end
+
       objects
     end
 
@@ -212,14 +223,16 @@ module Chingu
     #
     #   player.sees_enemy if game_object_map.game_object_between?(player, enemy, :only => Wall) # Walls block vision
     #
-    def game_object_between?(origin, dest, options={})
+    def game_object_between?(origin, dest, options = {})
       grid_spaces_between(origin, dest) do |x, y|
         if options[:target]
           x_pixels = x * @grid[0]
           y_pixels = y * @grid[1]
+
           return true if options[:target].collision_at?(x_pixels, y_pixels)
         else
           obj = game_object_at(x, y)
+
           if options[:only]
             return true if obj and obj != origin and obj != dest and obj.is_a? options[:only]
           else
@@ -227,6 +240,7 @@ module Chingu
           end
         end
       end
+
       return false
     end
 
@@ -236,7 +250,8 @@ module Chingu
     #
     def game_object_at(x, y)
       return @map[x][y] if @map[x] and @map[x][y]
-      return nil
+
+      return
     end
 
     #
@@ -247,48 +262,53 @@ module Chingu
     # square.
     #
     def grid_spaces_between(origin, dest)
-      # Note: x and y here are a Grid location, not pixel coordinates.
+      # NOTE: x and y here are a Grid location, not pixel coordinates.
       raise "Expected GameObject as origin, got #{origin.class}" unless origin.is_a? Chingu::GameObject
       raise "Expected GameObject as dest, got #{dest.class}" unless dest.is_a? Chingu::GameObject
-      start_x = (origin.bb.x/ @grid[0]).to_i
-      stop_x =  (dest.bb.x/ @grid[0]).to_i
-      start_y = (origin.bb.y/ @grid[1]).to_i
-      stop_y =  (dest.bb.y/ @grid[1]).to_i
+
+      start_x = (origin.bb.x / @grid[0]).to_i
+      stop_x =  (dest.bb.x / @grid[0]).to_i
+
+      start_y = (origin.bb.y / @grid[1]).to_i
+      stop_y =  (dest.bb.y / @grid[1]).to_i
+
       diff_x = (start_x - stop_x).abs
       diff_y = (start_y - stop_y).abs
 
       x = start_x
       y = start_y
+
       n = 1 + diff_x + diff_y
-      x_inc = 1 #FIXME: do fewer checks
+
+      x_inc = 1 # FIXME: do fewer checks
       x_inc = -1 if start_x > stop_x
+
       y_inc = 1
       y_inc = -1 if start_y > stop_y
+
       error = diff_x - diff_y
       diff_x *= 2
       diff_y *= 2
 
-
       checked_squares = []
-      checked_squares << [start_x,start_y]
-      checked_squares << [stop_x,stop_y]
-      n.times do
 
-        checked_squares << [x,y]
+      checked_squares << [start_x, start_y]
+      checked_squares << [stop_x, stop_y]
+
+      n.times do
+        checked_squares << [x, y]
         yield(x, y) if block_given?
 
-        if error > 0
+        if error.positive?
           x += x_inc
           error -= diff_y
         else
           y += y_inc
           error += diff_x
         end
-
       end
 
       return checked_squares
     end
-
   end
 end
