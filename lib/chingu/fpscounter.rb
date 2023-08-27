@@ -27,13 +27,15 @@ module Chingu
   #
 	class FPSCounter
     attr_reader :milliseconds_since_last_tick
-    alias :dt :milliseconds_since_last_tick
+
+    alias dt milliseconds_since_last_tick
 
     #
     # Frames per second, access with $window.fps or $window.framerate
     #
     attr_reader :fps
-    alias :framerate :fps
+
+    alias framerate fps
 
     #
     # Total amount of game iterations (ticks)
@@ -56,6 +58,7 @@ module Chingu
 		def register_tick
 			@accum_fps += 1
       @ticks += 1
+
 			current_second = Gosu::milliseconds / 1000
 			if current_second != @current_second
 				@current_second = current_second
@@ -68,7 +71,8 @@ module Chingu
       #
 			@milliseconds_since_last_tick = Gosu::milliseconds - @last_value
 			@last_value = Gosu::milliseconds
-			return @milliseconds_since_last_tick
+
+      return @milliseconds_since_last_tick
 		end
 	end
 end
