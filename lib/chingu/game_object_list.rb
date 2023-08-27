@@ -19,7 +19,7 @@
 #
 #++
 
-require 'forwardable'
+require "forwardable"
 
 module Chingu
   #
@@ -51,7 +51,7 @@ module Chingu
     end
 
     def destroy_all
-      @game_objects.each { |game_object| game_object.destroy }
+      @game_objects.each(&:destroy)
     end
 
     alias clear destroy_all
@@ -92,23 +92,31 @@ module Chingu
     end
 
     def update
-      @unpaused_game_objects.each { |go| go.update_trait
- go.update }
+      @unpaused_game_objects.each do |go|
+        go.update_trait
+        go.update
+      end
     end
 
     def force_update
-      @game_objects.each { |go| go.update_trait
- go.update }
+      @game_objects.each do |go|
+        go.update_trait
+        go.update
+      end
     end
 
     def draw
-      @visible_game_objects.each { |go| go.draw_trait
- go.draw }
+      @visible_game_objects.each do |go|
+        go.draw_trait
+        go.draw
+      end
     end
 
     def force_draw
-      @game_objects.each { |go| go.draw_trait
- go.draw }
+      @game_objects.each do |go|
+        go.draw_trait
+        go.draw
+      end
     end
 
     def draw_relative(x = 0,
@@ -145,7 +153,7 @@ module Chingu
     # Disable automatic calling of update() and update_trait() each game loop for all game objects
     #
     def pause!
-      @game_objects.each { |object| object.pause! }
+      @game_objects.each(&:pause!)
     end
 
     alias pause pause!
@@ -154,7 +162,7 @@ module Chingu
     # Enable automatic calling of update() and update_trait() each game loop for all game objects
     #
     def unpause!
-      @game_objects.each { |object| object.unpause! }
+      @game_objects.each(&:unpause!)
     end
 
     alias unpause unpause!
@@ -163,7 +171,7 @@ module Chingu
     # Disable automatic calling of draw and draw_trait each game loop for all game objects
     #
     def hide!
-      @game_objects.each { |object| object.hide! }
+      @game_objects.each(&:hide!)
     end
 
     alias hide hide!
@@ -172,7 +180,7 @@ module Chingu
     # Enable automatic calling of draw and draw_trait each game loop for all game objects
     #
     def show!
-      @game_objects.each { |object| object.show! }
+      @game_objects.each(&:show!)
     end
 
     alias show show!
