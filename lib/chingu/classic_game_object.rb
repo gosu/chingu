@@ -98,7 +98,7 @@ module Chingu
     def to_s
       "#{self.class.to_s} @ #{x.to_i} / #{y.to_i} " <<
       "(#{width.to_i} x #{height.to_i}) - " <<
-      " ratio: #{sprintf("%.2f",width/height)} scale: #{sprintf("%.2f", factor_x)}/#{sprintf("%.2f", factor_y)} angle: #{angle.to_i} zorder: #{zorder} alpha: #{alpha}"
+      " ratio: #{sprintf("%.2f",width / height)} scale: #{sprintf("%.2f", factor_x)}/#{sprintf("%.2f", factor_y)} angle: #{angle.to_i} zorder: #{zorder} alpha: #{alpha}"
     end
 
     #
@@ -189,9 +189,9 @@ module Chingu
     #
     def angle=(value)
       if value < 0
-        value = 360+value
+        value = 360 + value
       elsif value > 360
-        value = value-360
+        value = value - 360
       end
       @angle = value
     end
@@ -255,7 +255,7 @@ module Chingu
     # Works as #draw() but takes offsets for all draw_rot()-arguments. Used among others by the viewport-trait.
     #
     def draw_relative(x=0, y=0, zorder=0, angle=0, center_x=0, center_y=0, factor_x=0, factor_y=0)
-      @image.draw_rot(@x+x, @y+y, @zorder+zorder, @angle+angle, @center_x+center_x, @center_y+center_y, @factor_x+factor_x, @factor_y+factor_y, @color, @mode) if @visible
+      @image.draw_rot(@x + x, @y + y, @zorder + zorder, @angle + angle, @center_x + center_x, @center_y + center_y, @factor_x + factor_x, @factor_y + factor_y, @color, @mode) if @visible
     end
 
     #
