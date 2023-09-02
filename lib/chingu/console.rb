@@ -34,12 +34,13 @@ module Chingu
     def initialize(update_interval = 16.666666)
       $window = self
       @update_interval = update_interval
-      @root = File.dirname(File.expand_path($0))
+      @root = File.dirname(File.expand_path($PROGRAM_NAME))
       @game_objects = GameObjectList.new
       @fps_counter = FPSCounter.new
       @game_state_manager = GameStateManager.new
       @milliseconds_since_last_tick = 0
       @factor = 1
+
       setup
     end
 
@@ -54,14 +55,15 @@ module Chingu
         t2 = Time.now
         update_duration = t2 - t1
 
-        milliseconds = (@update_interval/1000 - update_duration)
-        sleep(milliseconds)  if milliseconds > 0
+        milliseconds = (@update_interval / 1000 - update_duration)
+        sleep(milliseconds) if milliseconds.positive?
       end
     end
-    alias :show :start
+
+    alias show start
 
     # Placeholder to be overwritten
-    def setup; end;
+    def setup; end
 
     #
     # Returns self inside GameState.initialize (a game state is not 'active' inside initialize())
