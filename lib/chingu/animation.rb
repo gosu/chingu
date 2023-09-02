@@ -158,12 +158,12 @@ module Chingu
       [@width, @height]
     end
 
-		#
-		# Returns true if the current frame is the last
-		#
-		def last_frame?
-			@previous_index == @index
-		end
+    #
+    # Returns true if the current frame is the last
+    #
+    def last_frame?
+      @previous_index == @index
+    end
 
     #
     # Fetch a frame or frames:
@@ -245,7 +245,7 @@ module Chingu
       end
       @frames[@index]
     end
-		alias :next! :next
+    alias :next! :next
 
     #
     # Initialize non-blurry zoom on frames in animation
