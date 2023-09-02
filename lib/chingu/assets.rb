@@ -35,6 +35,7 @@ module Gosu
     def self.autoload(name)
       ret = (path = find_file(name)) ? Gosu::Image.new(path) : nil
       raise "Can't load image \"#{name}\"" if ret.nil?
+
       return ret
     end
   end
@@ -47,11 +48,11 @@ module Gosu
     # @param [String] name Name of the font (or path to TTF font)
     # @param [Number] size Size of the font.
     def self.autoload(name, size)
-      font_name = if path = find_file(name)
-        path # Use the full path, found in the autoload dirs.
-      else
-        name # Font not found in the path. Assume it is an OS font.
-      end
+      font_name = if (path = find_file(name))
+                    path # Use the full path, found in the autoload dirs.
+                  else
+                    name # Font not found in the path. Assume it is an OS font.
+                  end
 
       return Gosu::Font.new($window, font_name, size)
     end
@@ -64,7 +65,7 @@ module Gosu
     # @overload self.[](size)
     #   Get a font of a given size using the Gosu.default_font_name.
     #   @param [Number] size Size of the font.
-    def self.[]( *args )
+    def self.[](*args)
       case args.size
       when 1
         name = Gosu.default_font_name
@@ -92,7 +93,7 @@ module Gosu
     # @param [String] name Name of the font (or path to TTF font)
     # @param [Number] size Size of the font.
     # @param [Gosu::Font] font Font object to save.
-    def self.[]=( name, size, font )
+    def self.[]=(name, size, font)
       @resources[[name, size]] = font
     end
   end
@@ -112,5 +113,6 @@ module Gosu
       (path = find_file(name)) ? Gosu::Sample.new(path) : nil
     end
   end
+
   Sound = Sample  # Gosu uses Sample, but Sound makes sense too.
 end
