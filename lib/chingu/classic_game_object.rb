@@ -32,11 +32,12 @@ module Chingu
   # If you wan't a invisible object but with traits, use BasicGameObject.
   #
   class ClassicGameObject < Chingu::BasicGameObject
-    attr_accessor :image, :x, :y, :angle, :center_x, :center_y, :factor_x, :factor_y, :color, :mode, :zorder
+    attr_accessor :image, :x, :y, :angle, :center_x, :center_y, :factor_x,
+                  :factor_y, :color, :mode, :zorder
     attr_reader :factor, :center, :height, :width
 
-    include Chingu::Helpers::InputClient        # Adds input and input=
-    include Chingu::Helpers::RotationCenter     # Adds easy and verbose modification of @center_x and @center_y
+    include Chingu::Helpers::InputClient    # Adds input and input=
+    include Chingu::Helpers::RotationCenter # Adds easy and verbose modification of @center_x and @center_y
 
     def initialize(options = {})
       super
@@ -78,7 +79,7 @@ module Chingu
         @color = Gosu::Color.new(options[:color] || 0xFFFFFFFF)
       end
 
-      self.alpha = options[:alpha]  if options[:alpha]
+      self.alpha = options[:alpha] if options[:alpha]
 
       @mode = options[:mode] || :default # :additive is also available.
       @zorder = options[:zorder] || 100
@@ -92,13 +93,14 @@ module Chingu
       # Call setup, this class holds an empty setup() to be overriden
       # setup() will be an easier method to override for init-stuff since you don't need to do super etc..
       setup
-
     end
 
     def to_s
-      "#{self.class.to_s} @ #{x.to_i} / #{y.to_i} " <<
-      "(#{width.to_i} x #{height.to_i}) - " <<
-      " ratio: #{sprintf("%.2f",width / height)} scale: #{sprintf("%.2f", factor_x)}/#{sprintf("%.2f", factor_y)} angle: #{angle.to_i} zorder: #{zorder} alpha: #{alpha}"
+      "#{self.class} @ #{x.to_i} / #{y.to_i} " \
+      "(#{width.to_i} x #{height.to_i}) - " \
+      "ratio: #{format("%.2f", width / height)}" \
+      "scale: #{format("%.2f", factor_x)}/#{format("%.2f", factor_y)}" \
+      "angle: #{angle.to_i} zorder: #{zorder} alpha: #{alpha}"
     end
 
     #
@@ -107,7 +109,8 @@ module Chingu
     # Makes it easy to clone a objects x,y,angle etc.
     #
     def attributes
-      [@x, @y, @angle, @center_x, @center_y, @factor_x, @factor_y, @color.dup, @mode, @zorder]
+      [@x, @y, @angle, @center_x, @center_y, @factor_x, @factor_y,
+       @color.dup, @mode, @zorder]
     end
 
     #
@@ -115,7 +118,8 @@ module Chingu
     # Mainly used in combination with game_object1.attributes = game_object2.attributes
     #
     def attributes=(attributes)
-      self.x, self.y, self.angle, self.center_x, self.center_y, self.factor_x, self.factor_y, self.color, self.mode, self.zorder = *attributes
+      self.x, self.y, self.angle, self.center_x, self.center_y, self.factor_x,
+      self.factor_y, self.color, self.mode, self.zorder = *attributes
     end
 
     #
@@ -156,12 +160,12 @@ module Chingu
       [self.width, self.height]
     end
 
-
     # Quick way of setting both factor_x and factor_y
     def factor=(factor)
       @factor = factor
       @factor_x = @factor_y = factor
     end
+
     alias scale= factor=
     alias scale factor
 
@@ -179,7 +183,7 @@ module Chingu
     # Set objects alpha-value (internally stored in @color.alpha)
     # If out of range, set to closest working value. this makes fading simpler.
     def alpha=(value)
-      value = 0   if value < 0
+      value = 0 if value.negative?
       value = 255 if value > 255
       @color.alpha = value.to_i
     end
@@ -188,11 +192,12 @@ module Chingu
     # Sets angle, normalize it to between 0..360
     #
     def angle=(value)
-      if value < 0
+      if value.negative?
         value = 360 + value
       elsif value > 360
-        value = value - 360
+        value -= 360
       end
+
       @angle = value
     end
 
@@ -202,7 +207,8 @@ module Chingu
     def hide!
       @visible = false
     end
-    alias :hide :hide!
+
+    alias hide hide!
 
     #
     # Enable automatic calling of draw and draw_trait each game loop
@@ -210,7 +216,8 @@ module Chingu
     def show!
       @visible = true
     end
-    alias :show :show!
+
+    alias show show!
 
     #
     # Returns true if visible (not hidden)
@@ -219,7 +226,6 @@ module Chingu
       @visible == true
     end
 
-
     # Returns true if object is inside the game window, false if outside
     def inside_window?(x = @x, y = @y)
       x >= 0 && x <= $window.width && y >= 0 && y <= $window.height
@@ -227,7 +233,7 @@ module Chingu
 
     # Returns true object is outside the game window
     def outside_window?(x = @x, y = @y)
-      not inside_window?(x,y)
+      not inside_window?(x, y)
     end
 
     # Calculates the distance from self to a given object
@@ -248,21 +254,26 @@ module Chingu
     # Our encapsulation of GOSU's image.draw_rot, uses the objects variables to draw it on screen if @visible is true
     #
     def draw
-      @image.draw_rot(@x, @y, @zorder, @angle, @center_x, @center_y, @factor_x, @factor_y, @color, @mode) if @visible
+      @image.draw_rot(@x, @y, @zorder, @angle, @center_x, @center_y,
+                      @factor_x, @factor_y, @color, @mode) if @visible
     end
 
     #
     # Works as #draw() but takes offsets for all draw_rot()-arguments. Used among others by the viewport-trait.
     #
-    def draw_relative(x=0, y=0, zorder=0, angle=0, center_x=0, center_y=0, factor_x=0, factor_y=0)
-      @image.draw_rot(@x + x, @y + y, @zorder + zorder, @angle + angle, @center_x + center_x, @center_y + center_y, @factor_x + factor_x, @factor_y + factor_y, @color, @mode) if @visible
+    def draw_relative(x = 0, y = 0, zorder = 0, angle = 0,
+                      center_x = 0, center_y = 0, factor_x = 0, factor_y = 0)
+      @image.draw_rot(@x + x, @y + y, @zorder + zorder, @angle + angle,
+                      @center_x + center_x, @center_y + center_y,
+                      @factor_x + factor_x, @factor_y + factor_y, @color, @mode) if @visible
     end
 
     #
     # Works as #draw() but takes x/y arguments. Used among others by the edit-game state.
     #
     def draw_at(x, y)
-      @image.draw_rot(x, y, @zorder, @angle, @center_x, @center_y, @factor_x, @factor_y, @color, @mode) if @visible
+      @image.draw_rot(x, y, @zorder, @angle, @center_x, @center_y,
+                      @factor_x, @factor_y, @color, @mode) if @visible
     end
   end
 end
