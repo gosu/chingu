@@ -1,5 +1,6 @@
-require_rel 'helpers/class_inheritable_accessor'
-require_rel 'inflector'
+require_rel "helpers/class_inheritable_accessor"
+require_rel "inflector"
+
 module Chingu
   #
   # BasicGameObject. Resonating with 1.9.1, this is our most basic class that all game objects ultimate should build on.
@@ -16,7 +17,8 @@ module Chingu
     attr_accessor :parent
 
     class_inheritable_accessor :trait_options
-    @trait_options = Hash.new
+    @trait_options = {}
+
     def trait_options; self.class.trait_options; end
 
     #
@@ -51,15 +53,17 @@ module Chingu
         end
       end
     end
-    class << self; alias :has_trait :trait;  end
+
+    class << self; alias has_trait trait; end
 
     def self.traits(*traits)
       Array(traits).each { |trait_name| trait trait_name }
     end
-    class << self; alias :has_traits :traits; end
 
-    alias :game_state :parent
-    alias :game_state= :parent=
+    class << self; alias has_traits traits; end
+
+    alias game_state parent
+    alias game_state= parent=
 
     #
     # BasicGameObject initialize
@@ -69,7 +73,7 @@ module Chingu
       @options = options
       @parent = options[:parent]
 
-      self.class.instances ||= Array.new
+      self.class.instances ||= []
       self.class.instances << self
 
       #
@@ -108,8 +112,8 @@ module Chingu
       # Keep track of instances in class-variable
       # Used for quick access to all isntances of a certain class, for example Enemy.all
       #
-      #instances ||= Array.new
-      #instances << instance
+      # instances ||= Array.new
+      # instances << instance
 
       return instance
     end
@@ -118,19 +122,21 @@ module Chingu
     # Disable automatic calling of update() and update_trait() each game loop
     #
     def pause!
-      @parent.game_objects.pause_game_object(self)    if @parent && !@paused
+      @parent.game_objects.pause_game_object(self) if @parent && !@paused
       @paused = true
     end
-    alias :pause :pause!
+
+    alias pause pause!
 
     #
     # Enable automatic calling of update() and update_trait() each game loop
     #
     def unpause!
-      @parent.game_objects.unpause_game_object(self)  if @parent && @paused
+      @parent.game_objects.unpause_game_object(self) if @parent && @paused
       @paused = false
     end
-    alias :unpause :unpause!
+
+    alias unpause unpause!
 
     #
     # Returns true if paused
@@ -215,7 +221,7 @@ module Chingu
     #
     def self.destroy_all
       all.each { |game_object| game_object.parent.remove_game_object(game_object) }
-      instances.clear if  instances
+      instances.clear if instances
     end
 
     #
@@ -229,6 +235,7 @@ module Chingu
       end
       self.class.instances.delete(self)
     end
-    alias :destroy! :destroy
+
+    alias destroy! destroy
   end
 end
