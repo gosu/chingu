@@ -19,7 +19,7 @@
 #
 #++
 
-require_rel 'helpers'
+require_rel "helpers"
 
 module Chingu
   #
@@ -30,7 +30,7 @@ module Chingu
   #
   class GameObject < Chingu::BasicGameObject
     trait :sprite
-    
+
     include Chingu::Helpers::InputClient # Adds input and input=
   end
 end
