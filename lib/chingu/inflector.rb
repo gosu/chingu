@@ -19,7 +19,6 @@
 #
 #++
 
-
 module Chingu
   module Inflector
 		#
