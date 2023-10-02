@@ -19,7 +19,6 @@
 #
 #++
 
-
 module Chingu
   #
   # GameStateManger is responsible for keeping track of game states with a simple pop/push stack.
