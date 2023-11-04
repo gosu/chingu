@@ -19,56 +19,59 @@
 #
 #++
 
-
 module Chingu
   #
   # Calculates a fps and a tick-time for use in update-calls
   # register_tick() must be called every game loop iteration
   #
-	class FPSCounter
+  class FPSCounter
     attr_reader :milliseconds_since_last_tick
-    alias :dt :milliseconds_since_last_tick
-    
+
+    alias dt milliseconds_since_last_tick
+
     #
     # Frames per second, access with $window.fps or $window.framerate
     #
     attr_reader :fps
-    alias :framerate :fps
-    
+
+    alias framerate fps
+
     #
     # Total amount of game iterations (ticks)
     #
     attr_reader :ticks
-  
-		def initialize
-			@current_second = Gosu::milliseconds / 1000
-			@accum_fps = 0
-			@fps = 0
+
+    def initialize
+      @current_second = Gosu.milliseconds / 1000
+      @accum_fps = 0
+      @fps = 0
       @ticks = 0
-      
+
       @milliseconds_since_last_tick = 0
-			@last_value = Gosu::milliseconds
-		end
-  
+      @last_value = Gosu.milliseconds
+    end
+
     #
     # This should be called once every game-iteration, preferable in update()
     #
-		def register_tick
-			@accum_fps += 1
+    def register_tick
+      @accum_fps += 1
       @ticks += 1
-			current_second = Gosu::milliseconds / 1000
-			if current_second != @current_second
-				@current_second = current_second
-				@fps = @accum_fps
-				@accum_fps = 0
-			end
+
+      current_second = Gosu.milliseconds / 1000
+      if current_second != @current_second
+        @current_second = current_second
+        @fps = @accum_fps
+        @accum_fps = 0
+      end
 
       #
       # Calculate how many milliseconds passed since last game loop iteration.
       #
-			@milliseconds_since_last_tick = Gosu::milliseconds - @last_value
-			@last_value = Gosu::milliseconds
-			return @milliseconds_since_last_tick
-		end
-	end
+      @milliseconds_since_last_tick = Gosu.milliseconds - @last_value
+      @last_value = Gosu.milliseconds
+
+      return @milliseconds_since_last_tick
+    end
+  end
 end

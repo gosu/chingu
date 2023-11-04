@@ -34,21 +34,21 @@ module Chingu
     #
     module CollisionDetection
       attr_accessor :collidable
-      
+
       module ClassMethods
         def initialize_trait(options = {})
           trait_options[:collision_detection] = options
         end
       end
-      
+
       def setup_trait(options)
         @collidable = true
         super
       end
-      
+
       #
       # The standard method called when self needs to be checked for a collision with another object
-      # By default it calls bounding_box_collision? which will check for intersectons between the 
+      # By default it calls bounding_box_collision? which will check for intersectons between the
       # two objects "bounding_box" attributs (a Chingu::Rect instance)
       #
       def collides?(object2)
@@ -61,7 +61,7 @@ module Chingu
         end
       end
       alias :collision? :collides?
-      
+
       #
       # Collide self with a given game object by checking both objects bounding_box'es
       # Returns true if colliding.
@@ -70,7 +70,7 @@ module Chingu
         return false  unless self.collidable && object2.collidable
         self.bounding_box.collide_rect?(object2.bounding_box)
       end
-      
+
       #
       # Collide self using distance between 2 objects and their radius.
       # Returns true if colliding.
@@ -79,7 +79,7 @@ module Chingu
         return false  unless self.collidable && object2.collidable
         Gosu.distance(self.x, self.y, object2.x, object2.y) < self.radius + object2.radius
       end
-      
+
       #
       # BoundingBox vs Radius collision
       #
@@ -87,24 +87,24 @@ module Chingu
       #
       def bounding_box_bounding_circle_collision?(object2)
         return false  unless self.collidable && object2.collidable
-        
+
         rect = self.respond_to?(:bounding_box) ? self.bounding_box : object2.bounding_box
         circle = self.respond_to?(:radius) ? self : object2
         radius = circle.radius.to_i
-        
+
         distance_x = (circle.x - rect.x - rect.width/2).abs
         distance_y = (circle.y - rect.y - rect.height/2).abs
-        
+
         return false if distance_x > (rect.width/2 + circle.radius)
         return false if distance_y > (rect.height/2 + circle.radius)
-        
+
         return true if distance_x <= (rect.width/2)
         return true if distance_y <= (rect.height/2)
-          
+
         cornerDistance_sq = (distance_x - rect.width/2) ** 2 + (distance_y - rect.height/2) ** 2
         return (cornerDistance_sq <= (circle.radius ** 2))
       end
-        
+
       #
       # Collides self with all objects of given classes
       # Yields self and the objects it collides with
@@ -154,7 +154,7 @@ module Chingu
         end
       end
 
-      
+
       module ClassMethods
         #
         # Yield all objects of this class that is colliding with point x,y
@@ -169,7 +169,7 @@ module Chingu
             yield object if object.respond_to?(:radius) && Gosu.distance(object.x, object.y, x, y) < object.radius
           end
         end
-      
+
         #
         # Works like each_collision but with inline-code for speedups
         #
@@ -177,7 +177,7 @@ module Chingu
           Array(klasses).each do |klass|
             object2_list = (klass.respond_to?(:all) ? klass.all : Array(klass))
             #total_radius = object1.radius + object2.radius  # possible optimization?
-            
+
             self.all.each do |object1|
               object2_list.each do |object2|
                 next  if object1 == object2  # Don't collide objects with themselves
@@ -187,7 +187,7 @@ module Chingu
             end
           end
         end
-        
+
         #
         # Works like each_collsion but with explicit bounding_box collisions (inline-code for speedups)
         #
@@ -203,7 +203,7 @@ module Chingu
             end
           end
         end
-        
+
         #
         # Class method that will check for collisions between all instances of two classes
         # and yield the 2 colliding game object instances.
@@ -218,7 +218,7 @@ module Chingu
         def each_collision(*klasses)
           # Make sure klasses is always an array.
           Array(klasses).each do |klass|
-            
+
             if self.respond_to?(:instance_methods) && klass.respond_to?(:instance_methods)
               if self.instance_methods.include?(:radius) && klass.instance_methods.include?(:radius)
                 self.each_bounding_circle_collision(klass) do |o1, o2|
@@ -226,7 +226,7 @@ module Chingu
                 end
                 next
               end
-                
+
               if self.instance_methods.include?(:bounding_box) && klass.instance_methods.include?(:bounding_box)
                 self.each_bounding_box_collision(klass) do |o1, o2|
                   yield o1, o2
@@ -234,7 +234,7 @@ module Chingu
                 next
               end
             end
-              
+
             #
             # Possible optimization, look into later.
             #

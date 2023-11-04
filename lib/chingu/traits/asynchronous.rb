@@ -21,17 +21,17 @@
 
 module Chingu
   module Traits
-    
+
     #
     # A chingu trait providing an asynchronous tasks queue
     #
     # For example:
     # 	class Robot < GameObject
     # 	  traits :asynchronous
-    # 	  
+    #
     # 	  # robot stuff
     # 	end
-    # 	
+    #
     # 	# later, controlling your robot...
     # 	robot.async do |q|
     # 	  q.tween(5000, :x => 1024, :y => 64)
@@ -41,17 +41,17 @@ module Chingu
     # Will move the robot asynchronously from its current location to
     # (1024, 64), then blow it up. The +async+ method returns immediately
     # after adding tasks to the queue.
-    # 
+    #
     # The first task on the queue is processed each tick during the
     # update phase, then removed from the queue when it is deemed finished.
     # What constitutes "finished" is determined by the particular subclass of
     # +BasicTask+.
     #
-    
+
     module Asynchronous
-      
+
       attr_reader :tasks
-      
+
       #
       # Setup
       #
@@ -59,12 +59,12 @@ module Chingu
         @tasks = Chingu::Async::TaskList.new
         super
       end
-      
+
       def update_trait
         @tasks.update self
         super
       end
-      
+
       #
       # Add a set of tasks to the task queue to be executed
       # asynchronously. If no block is given, returns the TaskBuilder that
@@ -78,7 +78,7 @@ module Chingu
           builder
         end
       end
-      
+
     end
   end
 end

@@ -21,7 +21,7 @@
 
 module Chingu
   module Traits
-  
+
     #
     # A chingu trait providing timer-methods to its includer, examples:
     # during(300) { @color = Color.new(0xFFFFFFFF) } # forces @color to white ever update for 300 ms
@@ -32,7 +32,7 @@ module Chingu
     # during(100) { @color.alpha = 100 }.then { @color.alpha = 255 }
     #
     module Timer
-    
+
       def setup_trait(options)
         #
         # Timers are saved as an array of arrays where each entry contains:
@@ -57,7 +57,7 @@ module Chingu
         @_timers << @_last_timer
         self
       end
-      
+
       #
       # Executes block after 'time' milliseconds
       #
@@ -96,7 +96,7 @@ module Chingu
           return if timer_exists?(options[:name]) && options[:preserve]
           stop_timer(options[:name])
         end
-        
+
         ms = Gosu::milliseconds()
         @_repeating_timers << [options[:name], ms + delay, delay, options[:during] ? ms + options[:during] : nil, block]
         if options[:during]
@@ -133,7 +133,7 @@ module Chingu
         @_timers.reject! { |name, start_time, end_time, block| timer_name == name }
         @_repeating_timers.reject! { |name, start_time, end_time, block| timer_name == name }
       end
-      
+
       #
       # Stop all timers
       #
@@ -141,18 +141,18 @@ module Chingu
         @_timers.clear
         @_repeating_timers.clear
       end
-      
+
       def update_trait
         ms = Gosu::milliseconds()
-        
+
         @_timers.each do |name, start_time, end_time, block|
           block.call if ms > start_time && (end_time == nil || ms < end_time)
         end
-                
+
         index = 0
         @_repeating_timers.each do |name, start_time, delay, end_time, block|
           if ms > start_time
-            block.call  
+            block.call
             @_repeating_timers[index] = [name, ms + delay, delay, end_time, block]
           end
           if end_time && ms > end_time
@@ -164,10 +164,10 @@ module Chingu
 
         # Remove one-shot timers (only a start_time, no end_time) and all timers which have expired
         @_timers.reject! { |name, start_time, end_time, block| (ms > start_time && end_time == nil) || (end_time != nil && ms > end_time) }
-      
+
         super
       end
-      
+
     end
   end
 end

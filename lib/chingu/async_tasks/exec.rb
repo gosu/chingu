@@ -21,28 +21,28 @@
 
 module Chingu
   module AsyncTasks
-    
+
     #
     # Block execution as an asynchronous task.
     #
     class Exec < Chingu::Async::BasicTask
-      
+
       def initialize(&block)
         super()
         @block = block
         @finished = false
       end
-      
+
       def update(object)
         @block[]
         @finished = true
       end
-      
+
       def finished?
         !!@finished
       end
-      
+
     end
-    
+
   end
 end

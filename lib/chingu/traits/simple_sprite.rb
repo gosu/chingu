@@ -13,7 +13,7 @@ module Chingu
     # A Chingu trait providing ability to be drawn as an image.
     #
     # Example:
-    # 
+    #
     #   class Rocket < BasicGameObject
     #     trait :simple_sprite
     #   end
@@ -23,22 +23,22 @@ module Chingu
     # Options:
     #  :image - actual sprite to draw
     #         - see #image= for details as this method is used to set this option
-    #  
+    #
     # Introducing Variables:
     #  :x, :y, :zorder, :factor_x, :factor_y, :mode, :color, :visible
     #
-    module SimpleSprite      
+    module SimpleSprite
       module ClassMethods
         def initialize_trait(options = {})
           trait_options[:sprite] = options
         end
       end
-      
-      attr_accessor :x, :y, :angle, :factor_x, :factor_y, :zorder, :mode, :color
-      attr_reader :factor, :center, :height, :width, :image     
-      attr_accessor :visible # kill this? force use of setter      
 
-      def setup_trait(object_options = {})        
+      attr_accessor :x, :y, :angle, :factor_x, :factor_y, :zorder, :mode, :color
+      attr_reader :factor, :center, :height, :width, :image
+      attr_accessor :visible # kill this? force use of setter
+
+      def setup_trait(object_options = {})
         @visible = true   unless options[:visible] == false
         self.image =  options[:image]  if options[:image]
         self.color =  options[:color] || ::Gosu::Color::WHITE.dup
@@ -47,20 +47,20 @@ module Chingu
         self.x =      options[:x] || 0
         self.y =      options[:y] || 0
         self.zorder = options[:zorder] || 100
-        
+
         self.factor = options[:factor] || options[:scale] || $window.factor || 1.0
         self.factor_x = options[:factor_x].to_f if options[:factor_x]
         self.factor_y = options[:factor_y].to_f if options[:factor_y]
-        
+
         if self.image
           self.width  = options[:width]   if options[:width]
           self.height = options[:height]  if options[:height]
           self.size   = options[:size]    if options[:size]
         end
-        
+
         super
       end
-      
+
       #
       # Let's have some useful information in to_s()
       #
@@ -81,7 +81,7 @@ module Chingu
       # Examples:
       #   image = 'rocket.png'
       #   image = Gosu::Image.new($window, 'rocket.png')
-      #     
+      #
       #    image = lambda do
       #      # TexPlay is library for Gosu image generation
       #      TexPlay.create_image($window,10,10).paint { circle(5,5,5, :color => :red) }
@@ -89,7 +89,7 @@ module Chingu
       #
       def image=(image)
         raise ArgumentError.new("No image set") if image.nil?
-        
+
         @image = if String === image
                    # 1) Try loading the image the normal way
                    # 2) Try looking up the picture using Chingus Image-cache
@@ -109,7 +109,7 @@ module Chingu
       def attributes
         [@x, @y, @angle, @factor_x, @factor_y, @color, @mode, @zorder]
       end
-  
+
       #
       # Set all attributes on 1 line
       # Mainly used in combination with game_object1.attributes = game_object2.attributes
@@ -126,7 +126,7 @@ module Chingu
       def width=(width)
         @factor_x = width.to_f / @image.width.to_f  if @image
       end
-      
+
       #
       # Get effective  width by calculating it from image-width and factor_x
       #
@@ -142,7 +142,7 @@ module Chingu
       def height=(height)
         @factor_y = height.to_f / @image.height.to_f  if @image
       end
-    
+
       #
       # Get effective height by calculating it from image-width and factor
       #
@@ -154,25 +154,25 @@ module Chingu
       def size=(size)
         self.width, self.height = *size
       end
-    
+
       # Get objects width and height in an array
       def size
         [self.width, self.height]
       end
-      
+
       # Quick way of setting both factor_x and factor_y
       def factor=(factor)
         @factor = @factor_x = @factor_y = factor
       end
       alias scale= factor=
       alias scale factor
-      
-    
+
+
       # Get objects alpha-value (internally stored in @color.alpha)
       def alpha
         @color.alpha
       end
-    
+
       # Set objects alpha-value (internally stored in @color.alpha)
       # If out of range, set to closest working value. this makes fading simpler.
       def alpha=(value)
@@ -200,7 +200,7 @@ module Chingu
         @parent.game_objects.hide_game_object(self)  if @parent && @visible == true
         @visible = false
       end
-    
+
       #
       # Enable automatic calling of draw and draw_trait each game loop
       #
@@ -208,13 +208,13 @@ module Chingu
         @parent.game_objects.show_game_object(self)  if @parent && @visible == false
         @visible = true
       end
-    
+
       #
       # Returns true if visible (not hidden)
       #
       def visible?
         @visible == true
-      end    
+      end
 
 
       # Returns true if object is inside the game window, false if outside
@@ -222,7 +222,7 @@ module Chingu
         x >= 0 && x <= $window.width && y >= 0 && y <= $window.height
       end
 
-      # Returns true object is outside the game window 
+      # Returns true object is outside the game window
       def outside_window?(x = @x, y = @y)
         not inside_window?(x,y)
       end
@@ -236,14 +236,14 @@ module Chingu
 
       #
       # Works as #draw() but takes offsets for all draw_rot()-arguments. Used among others by the viewport-trait.
-      #      
+      #
       def draw_relative(x=0, y=0, zorder=0,  factor_x=0, factor_y=0)
         @image.draw(@x+x, @y+y, @zorder+zorder, @factor_x+factor_x, @factor_y+factor_y, @color, @mode)  if @image
       end
 
       #
       # Works as #draw() but takes x/y arguments. Used among others by the edit-game state.
-      #      
+      #
       def draw_at(x, y)
         draw_relative(x,y)
       end

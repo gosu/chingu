@@ -19,7 +19,8 @@
 #
 #++
 
-require_rel 'helpers'
+require_rel "helpers"
+
 module Chingu
   #
   # GameObject inherits from BasicGameObject to get traits and some class-methods like .all and .destroy
@@ -29,6 +30,7 @@ module Chingu
   #
   class GameObject < Chingu::BasicGameObject
     trait :sprite
+
     include Chingu::Helpers::InputClient # Adds input and input=
   end
 end

@@ -29,48 +29,48 @@ module Chingu
     #
     module BoundingCircle
       attr_accessor :collidable
-    
+
       module ClassMethods
         def initialize_trait(options = {})
           trait_options[:bounding_circle] = options
         end
       end
-      
+
       def setup_trait(options)
         @cached_radius = nil
         @collidable = true
         super
       end
-      
+
       def collision_at?(x, y)
         Gosu.distance(self.x, self.y, x, y) < radius
       end
-      
+
       def radius
-        return @cached_radius if @cached_radius        
+        return @cached_radius if @cached_radius
         radius = (self.width + self.height) / 4
         radius = radius * trait_options[:bounding_circle][:scale] if  trait_options[:bounding_circle][:scale]
         return radius
       end
-      
+
       def diameter
         radius * 2
       end
-      
+
       def cache_bounding_circle
         @cached_radius = self.radius
       end
-      
+
       #def update_trait
       #  cache_bounding_circle  if trait_options[:bounding_circle][:cache] && !@cached_radius
       #  super
       #end
-      
+
       def circle_left;    self.x - self.radius; end
       def circle_right;   self.x + self.radius; end
       def circle_top;     self.y - self.radius; end
       def circle_bottom;  self.y + self.radius; end
-      
+
       def draw_trait
         draw_debug  if trait_options[:bounding_circle][:debug]
         super
@@ -82,7 +82,7 @@ module Chingu
       def draw_debug
         $window.draw_circle(self.x, self.y, self.radius, Chingu::DEBUG_COLOR)
       end
-        
+
     end
   end
 end

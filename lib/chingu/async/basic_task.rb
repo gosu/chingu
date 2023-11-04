@@ -23,12 +23,12 @@ require 'weakref'
 
 module Chingu
   module Async
-    
+
     class BasicTask
-      
+
       def initialize
       end
-      
+
       #
       # Returns true if the task has finished executing. The meaning of
       # "finished" is determined by the particular subclass.
@@ -36,11 +36,11 @@ module Chingu
       def finished?
         true
       end
-      
+
       def update(object)
       end
-      
+
     end
-    
+
   end
 end

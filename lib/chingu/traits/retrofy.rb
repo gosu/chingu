@@ -28,9 +28,9 @@ module Chingu
     # Also provides new code for draw() which uses screen_x / screen_y instead of x / y
     #
     module Retrofy
-    
+
       #def setup_trait(options)
-      #  @retrofy_options = {:debug => false}.merge(options)        
+      #  @retrofy_options = {:debug => false}.merge(options)
       #  super
       #end
 
@@ -64,12 +64,12 @@ module Chingu
         self.x >= 0 && self.x <= $window.width/self.factor && self.y >= 0 && self.y <= $window.height/self.factor
       end
 
-      # Returns true object is outside the game window 
+      # Returns true object is outside the game window
       # this special version takes @factor into consideration
       def outside_window?
         not inside_window?
-      end      
-      
+      end
+
       def draw
         self.image.draw_rot(self.screen_x, self.screen_y, self.zorder, self.angle, self.center_x, self.center_y, self.factor_x, self.factor_y, self.color, self.mode)
       end

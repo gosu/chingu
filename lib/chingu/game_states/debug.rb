@@ -19,20 +19,20 @@
 #
 #++
 
-module Chingu  
+module Chingu
   module GameStates
-  
+
     #
     # Debug game state (F1 is default key to start/exit debug win, 'p'
     # to pause game)
     #
-    # Usage: 
-    #  
+    # Usage:
+    #
     class Debug < Chingu::GameState
       include Chingu::Helpers::OptionsSetter
-      
+
       attr_accessor :fade_color, :text_color, :text, :x_offset, :y_offset
-      
+
       # TODO - centralize!
       Z = 999
 
@@ -50,50 +50,50 @@ module Chingu
 
         # it fails when setup in DEFAULTS as it needs existing $window
         @font ||= Gosu::Font[16]
-        
+
         self.input = {:p => :pause, :f1 => :return_to_game, :esc => :return_to_game}
       end
-    
+
       def return_to_game
         game_state_manager.pop_game_state
       end
-      
+
       def pause
         @paused = !@paused
       end
-      
+
       def update
         game_state_manager.previous_game_state.update unless @paused
       end
-      
+
       def draw
         previous_state.draw unless previous_state.nil?
 
         $window.draw_quad(  0,0,@fade_color,
                             $window.width,0,@fade_color,
                             $window.width,$window.height,@fade_color,
-                            0,$window.height,@fade_color,10)                       
-        
-        @font.draw("DEBUG CONSOLE", @x_offset, @y_offset, Z)       
+                            0,$window.height,@fade_color,10)
+
+        @font.draw("DEBUG CONSOLE", @x_offset, @y_offset, Z)
         print_lines(@text || generate_info)
       end
 
       protected
-      
+
       def print_lines(text)
         height = @font.height
         lines = text.respond_to?(:lines) ? text.lines : text
-        
+
         lines.each_with_index do |line,i|
           @font.draw(line.strip, @x_offset, @y_offset + height * (i+3), Z,1,1, @text_color)
-        end       
+        end
       end
 
       def generate_info
         info = ''
         info << previous_state.to_s
 
-        info << "\nObjects\n"         
+        info << "\nObjects\n"
 
         previous_state.game_objects.each do |o|
           info << "  #{o.class.to_s}: #{o.to_s}\n"
@@ -103,9 +103,9 @@ module Chingu
       end
 
       def previous_state
-        game_state_manager.previous_game_state        
+        game_state_manager.previous_game_state
       end
-      
+
     end
   end
 end

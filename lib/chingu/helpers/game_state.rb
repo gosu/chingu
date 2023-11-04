@@ -23,7 +23,7 @@ require 'forwardable'
 
 module Chingu
   module Helpers
-  
+
   #
   # push_game_state accepts either a class inherited from GameState or an object-instance from such a class.
   #
@@ -31,7 +31,7 @@ module Chingu
   #
   module GameState
     extend Forwardable
-    
+
     def_delegator :game_state_manager, :game_states
     def_delegator :game_state_manager, :push_game_state
     def_delegator :game_state_manager, :pop_game_state
@@ -41,6 +41,6 @@ module Chingu
     def_delegator :game_state_manager, :clear_game_states
     def_delegator :game_state_manager, :pop_until_game_state
   end
-  
+
   end
 end

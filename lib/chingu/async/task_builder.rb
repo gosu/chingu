@@ -21,7 +21,7 @@
 
 module Chingu
   module Async
-    
+
     #
     # Implements a DSL for appending new tasks to an task queue.
     #
@@ -29,12 +29,12 @@ module Chingu
       def initialize(tasks)
         @tasks = tasks
       end
-      
+
       #
       # Add a new task to the queue. The first argument is a Symbol or
       # String naming the type of task; remaining arguments are passed
       # on to the task's constructor.
-      # 
+      #
       # If a block is supplied, it is scheduled to be executed as soon as the
       # task is finished.
       #
@@ -43,29 +43,29 @@ module Chingu
         when Symbol, String
           klass_name = Chingu::Inflector.camelize(task)
           klass = Chingu::AsyncTasks.const_get(klass_name)
-          
+
           task = klass.new(*args, &block)
-          
+
         when Chingu::Async::BasicTask
           # pass
-          
+
         when Class
           task = task.new(*args, &block)
-          
+
         else raise TypeError, "task must be a Task object or task name"
         end
-        
+
         @tasks.enq(task)
         task
       end
-      
+
       #
       # Attempting to invoke a nonexistant method automatically calls
       # +task+ with the method name as the task type.
       #
       alias :method_missing :task
-      
+
     end
-    
+
   end
 end

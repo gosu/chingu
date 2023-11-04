@@ -28,7 +28,8 @@ module Chingu
     #   - step: [steps] move animation forward [steps] frames each time we call #next
     #
     def initialize(options)
-      options = {:step => 1, :loop => true, :bounce => false, :index => 0, :delay => 100}.merge!(options)
+      options = { :step => 1, :loop => true, :bounce => false, :index => 0,
+                  :delay => 100 }.merge!(options)
 
       @loop = options[:loop]
       @bounce = options[:bounce]
@@ -85,10 +86,10 @@ module Chingu
           else
             # Assume the shortest side of the actual file is the width/height for each frame
             image = Gosu::Image.new($window, file)
-            @width = @height = (image.width < image.height) ? image.width : image.height
-           end
+            @width = @height = image.width < image.height ? image.width : image.height
+          end
         else
-          @width = @height = (image.width < image.height) ? image.width : image.height
+          @width = @height = image.width < image.height ? image.width : image.height
         end
 
         @frames = Gosu::Image.load_tiles($window, image || file, @width, @height, true)
@@ -117,8 +118,8 @@ module Chingu
     #
     def frame_names=(names)
       names.each do |key, value|
-        @sub_animations[key] = self.new_from_frames(value)  if value.is_a? Range
-        @sub_animations[key] = @frames[value]               if value.is_a? Integer
+        @sub_animations[key] = self.new_from_frames(value) if value.is_a? Range
+        @sub_animations[key] = @frames[value] if value.is_a? Integer
         #
         # TODO: Add support for [1,4,5] array frame selection
         #
@@ -158,12 +159,12 @@ module Chingu
       [@width, @height]
     end
 
-		#
-		# Returns true if the current frame is the last
-		#
-		def last_frame?
-			@previous_index == @index
-		end
+    #
+    # Returns true if the current frame is the last
+    #
+    def last_frame?
+      @previous_index == @index
+    end
 
     #
     # Fetch a frame or frames:
@@ -173,9 +174,9 @@ module Chingu
     #   @animation[:explode]  # returns a cached Animation-instance with frames earlier set with @animation.frame_names = { ... }
     #
     def [](index)
-      return @frames[index]               if  index.is_a?(Integer)
-      return self.new_from_frames(index)  if  index.respond_to?(:each)
-      return @sub_animations[index]       if  index.is_a?(Symbol)
+      return @frames[index] if index.is_a?(Integer)
+      return self.new_from_frames(index) if index.respond_to?(:each)
+      return @sub_animations[index] if index.is_a?(Symbol)
     end
 
     #
@@ -203,7 +204,8 @@ module Chingu
       @index = 0
       self
     end
-    alias :reset! :reset
+
+    alias reset! reset
 
     #
     # Returns a new animation with the frames from the original animation.
@@ -215,6 +217,7 @@ module Chingu
       range.each do |nr|
         new_animation.frames << self.frames[nr]
       end
+
       return new_animation
     end
 
@@ -223,16 +226,15 @@ module Chingu
     # Animation#next() will look at bounce and loop flags to always return a correct frame (a Gosu#Image)
     #
     def next(recursion = true)
-
       if (@dt += $window.milliseconds_since_last_tick) >= @delay
         @dt = 0
         @previous_index = @index
         @index += @step
 
         # Has the animation hit end or beginning... time for bounce or loop?
-        if (@index >= @frames.size || @index < 0)
+        if @index >= @frames.size || @index.negative?
           if @bounce
-            @step *= -1   # invert number
+            @step *= -1 # invert number
             @index += @step
             @index += @step
           elsif @loop
@@ -245,13 +247,15 @@ module Chingu
       end
       @frames[@index]
     end
-		alias :next! :next
+
+    alias next! next
 
     #
     # Initialize non-blurry zoom on frames in animation
     #
     def retrofy
-      frames.each { |frame| frame.retrofy }
+      frames.each(&:retrofy)
+
       self
     end
 
@@ -260,7 +264,7 @@ module Chingu
     # This could be used for pixel perfect animation/movement.
     #
     def on_frame(frames, &block)
-      if frames.kind_of? Array
+      if frames.is_a? Array
         frames.each { |frame| @frame_actions[frame] = block }
       else
         @frame_actions[frames] = block

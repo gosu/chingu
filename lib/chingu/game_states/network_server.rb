@@ -20,7 +20,7 @@
 #++
 
 module Chingu
-  module GameStates  
+  module GameStates
     #
     # A game state that acts server in a multi-player game, suitable for smaller/middle sized games.
     # Used in combination with game state NetworkClient.
@@ -35,7 +35,7 @@ module Chingu
     #   handle_incoming_connections             # Non-blocking accept of incoming connections from clients
     #   handle_incoming_data(max_size)          # Non-blocking read of incoming server data
 
-    #   
+    #
     # The following callbacks can be overwritten to add your game logic:
     #
     #   on_connect(socket)        # when the TCP connection to the server is opened
@@ -51,7 +51,7 @@ module Chingu
     #     def on_connect(socket)
     #       send_msg(:cmd => :ping, :timestamp => Gosu::milliseconds)
     #     end
-    #     
+    #
     #     def on_msg(socket, msg)
     #       if msg[:cmd] == :pong
     #         latency = Gosu::milliseconds - msg[:timestamp]
@@ -70,7 +70,7 @@ module Chingu
     #
     class NetworkServer < NetworkState
       attr_reader :socket, :sockets, :max_connections
-      
+
       def initialize(options = {})
         super(options)
 
@@ -94,17 +94,17 @@ module Chingu
         rescue
           on_start_error($!)
         end
-        
+
         return self
       end
-      
+
       #
       # Callback for when Socket listens correctly on given host/port
       #
       def on_start
         puts "* Server listening on #{address}:#{port}"          if @debug
       end
-      
+
       #
       # Callback for when something goes wrong with startup (when making TCP socket listen to a port)
       #
@@ -115,7 +115,7 @@ module Chingu
         end
       end
 
-        
+
       #
       # Default network loop:
       # 1) Save incoming connections with #handle_incoming_connections
@@ -132,14 +132,14 @@ module Chingu
 
         super
       end
-      
+
       #
       # on_connect will be called when client successfully makes a connection to server
       #
       def on_connect(socket)
         puts "[Client Connected: #{socket}]"      if @debug
       end
-      
+
       #
       # on_disconnect will be called when server disconnects client for whatever reason
       #
@@ -174,7 +174,7 @@ module Chingu
           end
         end
       end
-  
+
       #
       # on_data(data) will be called from handle_incoming_data() by default.
       #
@@ -200,7 +200,7 @@ module Chingu
       def on_msg(socket, packet)
         # should be overridden.
       end
-      
+
       #
       # Broadcast 'msg' to all connected clients.
       # Returns amount of data sent.
@@ -215,7 +215,7 @@ module Chingu
       def send_msg(socket, msg)
         send_data(socket, Marshal.dump(msg))
       end
-      
+
       #
       # Send raw 'data' to the 'socket'
       # Returns amount of data sent, including headers.
@@ -244,15 +244,15 @@ module Chingu
 
       # Ensure that the buffer is cleared of data to write (call at the end of update or, at least after all sends).
       def flush
-        @sockets.each do |socket| 
+        @sockets.each do |socket|
           begin
-            socket.flush 
+            socket.flush
           rescue IOError
             disconnect_client(socket)
           end
         end
       end
-      
+
       #
       # Stops server
       #

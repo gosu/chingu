@@ -23,23 +23,23 @@ require "#{CHINGU_ROOT}/chingu/async_tasks/tween"
 
 module Chingu
   module AsyncTasks
-    
-    # 
+
+    #
     # Syntactic sugar for tween(duration, :x => x, :y => y, :angle => angle)
-    # 
+    #
     class Move < Tween
-      
+
       def initialize(duration, x, y, angle = nil)
         properties = { }
-        
+
         properties[:x]     = x unless x.nil?
         properties[:y]     = y unless y.nil?
         properties[:angle] = angle unless angle.nil?
-        
+
         super(duration, properties)
       end
-      
+
     end
-    
+
   end
 end

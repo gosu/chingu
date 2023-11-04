@@ -28,21 +28,22 @@ module Chingu
     include Chingu::Helpers::FPSCounter         # Adds FPSCounter delegators
     include Chingu::Helpers::GameState          # Easy access to the global game state-queue
     include Chingu::Helpers::GameObject         # Adds game_objects_of_class etc ...
-    
+
     attr_reader :root, :game_state_manager, :game_objects, :milliseconds_since_last_tick, :factor
-    
-    def initialize(update_interval = 16.666666)			
+
+    def initialize(update_interval = 16.666666)
       $window = self
       @update_interval = update_interval
-      @root = File.dirname(File.expand_path($0))
-      @game_objects = GameObjectList.new      
+      @root = File.dirname(File.expand_path($PROGRAM_NAME))
+      @game_objects = GameObjectList.new
       @fps_counter = FPSCounter.new
       @game_state_manager = GameStateManager.new
       @milliseconds_since_last_tick = 0
       @factor = 1
+
       setup
     end
-            
+
     #
     # This is our "game-loop". Will loop forever, with framerate specified and call update()
     # The idea is to be very simular to how a Chingu::Window works.
@@ -53,16 +54,17 @@ module Chingu
         update
         t2 = Time.now
         update_duration = t2 - t1
-        
-        milliseconds = (@update_interval/1000 - update_duration)
-        sleep(milliseconds)  if milliseconds > 0
+
+        milliseconds = (@update_interval / 1000 - update_duration)
+        sleep(milliseconds) if milliseconds.positive?
       end
     end
-    alias :show :start
+
+    alias show start
 
     # Placeholder to be overwritten
-    def setup; end;
-    
+    def setup; end
+
     #
     # Returns self inside GameState.initialize (a game state is not 'active' inside initialize())
     # Or returns current active game state (as in a switched to or pushed game state)
@@ -73,22 +75,22 @@ module Chingu
     def current_scope
       game_state_manager.inside_state || game_state_manager.current_game_state || self
     end
-    
+
     #
     # Chingus core-logic / loop. Gosu will call this each game-iteration.
     #
     def update
       #
-      # Register a tick with our rather standard tick/framerate counter. 
+      # Register a tick with our rather standard tick/framerate counter.
       # Returns the amount of milliseconds since last tick. This number is used in all update()-calls.
       # Without this self.fps would return an incorrect value.
       # If you override this in your Chingu::Window class, make sure to call super.
       #
       @milliseconds_since_last_tick = @fps_counter.register_tick
-      
+
       intermediate_update
     end
-    
+
     #
     # "game logic" update that is safe to call even between Gosus update-calls
     #
@@ -97,7 +99,7 @@ module Chingu
       # Call update() on all game objects belonging to the main window.
       #
       @game_objects.update
-      
+
       #
       # Call update() on all game objects belonging to the current game state.
       #

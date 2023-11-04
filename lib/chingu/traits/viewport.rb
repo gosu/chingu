@@ -22,30 +22,30 @@
 module Chingu
   module Traits
     #
-    # A chingu trait providing velocity and acceleration logic. 
+    # A chingu trait providing velocity and acceleration logic.
     # Adds parameters: velocity_x/y, acceleration_x/y and modifies self.x / self.y
     # Also keeps previous_x and previous_y which is the x, y before modification.
     # Can be useful for example collision detection
     #
     module Viewport
       attr_accessor :viewport
-      
+
       module ClassMethods
         def initialize_trait(options = {})
           trait_options[:viewport] = {:apply => true}.merge(options)
         end
       end
-      
+
       def setup_trait(options)
         @viewport_options = {:debug => false}.merge(options)
-        
+
         @viewport = Chingu::Viewport.new()
         @viewport.x = options[:viewport_x] || 0
         @viewport.y = options[:viewport_y] || 0
-        
+
         super
       end
-      
+
       def inside_viewport?(object)
         puts "Deprecated, use self.viewport.inside?() instead"
         object.x >= @viewport.x && object.x <= (@viewport.x + $window.width) &&
@@ -57,13 +57,13 @@ module Chingu
         puts "Deprecated, use self.viewport.outside?() instead"
         not inside_viewport?(object)
       end
-      
+
 			# Take care of laggy viewport movements
       def update_trait
 				@viewport.move_towards_target
 				super
       end
-      
+
       #
       # Override game states default draw that draws objects relative to the viewport.
       # It only draws game objects inside the viewport. (GOSU does no such optimizations)
@@ -71,7 +71,7 @@ module Chingu
       def draw
         #self.game_objects.draw_relative(-@viewport.x, -@viewport.y)
         @viewport.apply { super }
-      end      
+      end
     end
   end
 end

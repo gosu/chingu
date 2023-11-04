@@ -21,16 +21,16 @@
 
 module Chingu
   module GameStates
-  
+
     #
     # Premade game state for chingu - A simple pause state.
-    # Pause whenever with: 
+    # Pause whenever with:
     #   push_game_state(Chingu::GameStates::Pause)
     #
     # requires the global $window set to the instance of Gosu::Window (automaticly handled if you use Chingu::Window)
     #
     class Pause < Chingu::GameState
-      
+
       def initialize(options = {})
         super
         @white = Gosu::Color.new(255,255,255,255)
@@ -38,20 +38,20 @@ module Chingu
         @font = Gosu::Font[35]
         @text = "PAUSED - press ESC to return to game."
       end
-    
+
       def button_up(id)
         pop_game_state(:setup => false) if id == Gosu::KbEscape   # Return the previous game state, dont call setup()
       end
-      
+
       def draw
         previous_game_state.draw    # Draw prev game state onto screen (in this case our level)
         $window.draw_quad(  0,0,@color,
                             $window.width,0,@color,
                             $window.width,$window.height,@color,
                             0,$window.height,@color, Chingu::DEBUG_ZORDER)
-                            
+
         @font.draw(@text, ($window.width/2 - @font.text_width(@text)/2), $window.height/2 - @font.height, Chingu::DEBUG_ZORDER + 1)
-      end  
+      end
     end
   end
 end

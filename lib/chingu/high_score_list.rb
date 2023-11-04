@@ -37,7 +37,7 @@ module Chingu
       @file = options[:file] || "high_score_list.yml"
       @size = options[:size] || 100
       @sort_on = options[:sort_on] || :score
-      @high_scores = Array.new
+      @high_scores = []
     end
 
     #
@@ -45,9 +45,11 @@ module Chingu
     # If no :file is given, HighScoreList tries to load from file "high_score_list.yml"
     #
     def self.load(options = {})
-      require 'yaml'
+      require "yaml"
+
       high_score_list = HighScoreList.new(options)
       high_score_list.load
+
       return high_score_list
     end
 
@@ -57,12 +59,16 @@ module Chingu
     # Returns the position it got in the list, with 1 beeing the first positions
     #
     def add(data)
-      raise "No :name value in high score!"   if data[:name].nil?
-      raise "No :score value in high score!"  if data[:score].nil?
+      raise "No :name value in high score!" if data[:name].nil?
+      raise "No :score value in high score!" if data[:score].nil?
+
       add_to_list(force_symbol_hash(data))
+
       save_to_file
+
       position_by_score(data[:score])
     end
+
     alias << add
 
     #
@@ -70,20 +76,29 @@ module Chingu
     #
     def position_by_data(data)
       position = @high_scores.rindex(data)
+
       position += 1 if position
     end
 
     #
     # Returns the position 'score' would get in among the high scores:
-    #   @high_score_list.position_by_score(999999999) # most likely returns 1 for the number one spot
-    #   @high_score_list.position_by_score(1)         # most likely returns nil since no placement is found (didn't make it to the high scores)
+    #   @high_score_list.position_by_score(999999999) # most likely returns 1
+    #                                                 # for the number one spot
+    #
+    #   @high_score_list.position_by_score(1)         # most likely returns nil
+    #                                                 # since no placement is
+    #                                                 # found (didn't make it to
+    #                                                 # the high scores)
     #
     def position_by_score(score)
       position = 1
+
       @high_scores.each do |high_score|
-        return position   if score >= high_score[:score]
+        return position if score >= high_score[:score]
+
         position += 1
       end
+
       return nil
     end
 
@@ -91,7 +106,7 @@ module Chingu
     # Load data from previously specified @file
     #
     def load
-      @high_scores = YAML.load_file(@file)  if File.exist?(@file)
+      @high_scores = YAML.load_file(@file) if File.exist?(@file)
       @high_scores = @high_scores[0..@size]
     end
 
@@ -117,8 +132,9 @@ module Chingu
     # Save high score data into previously specified @file
     #
     def save_to_file
-      require 'yaml'
-      File.open(@file, 'w') do |out|
+      require "yaml"
+
+      File.open(@file, "w") do |out|
         YAML.dump(@high_scores, out)
       end
     end
@@ -128,6 +144,7 @@ module Chingu
     def add_to_list(data)
       @high_scores.push(data)
       @high_scores.sort! { |a, b| b[@sort_on] <=> a[@sort_on] }
+
       @high_scores = @high_scores[0..@size]
     end
 
@@ -136,8 +153,8 @@ module Chingu
       hash.each_pair do |key, value|
         symbol_hash[key.to_sym] = value
       end
+
       return symbol_hash
     end
-
   end
 end
